@@ -68,6 +68,13 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 		*buffer = append(*buffer, ' ')
 	}
 
+	// levelHints放到前面，[I], [W], [E]，因为它们的长度比较统一，容易对齐
+	if flag&FlagLevel != 0 && my.levelHints != nil {
+		var name = my.levelHints[message.level]
+		*buffer = append(*buffer, name...)
+		*buffer = append(*buffer, ' ')
+	}
+
 	if flag&(FlagLongFile|FlagShortFile) != 0 {
 		var filePath = message.filePath
 		if flag&FlagShortFile != 0 {
@@ -77,12 +84,6 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 		*buffer = append(*buffer, filePath...)
 		*buffer = append(*buffer, ':')
 		itoa(buffer, message.lineNum, -1)
-		*buffer = append(*buffer, ' ')
-	}
-
-	if flag&FlagLevel != 0 && my.levelHints != nil {
-		var name = my.levelHints[message.level]
-		*buffer = append(*buffer, name...)
 		*buffer = append(*buffer, ' ')
 	}
 }
