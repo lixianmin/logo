@@ -35,7 +35,7 @@
 3. 部分设计参考log4j，可以自定义appender，从而支持输出到其它设备
 4. ConsoleAppender输出到控制台
 5. RollingFileAppender输出到文件，支持自定义输出目录和文件名，支持按文件大小的归档
-6. 附送：ding.TalkAppender输出日志到钉钉
+6. **赠送**：ding.TalkAppender输出日志到钉钉
 
 
 
