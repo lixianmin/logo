@@ -17,8 +17,8 @@ Copyright (C) - All Rights Reserved
 var levelNames = []string{"", "info", "warn", "error"}
 
 type RollingFileAppender struct {
-	formatter   *MessageFormatter
 	levelFilter int
+	formatter   *MessageFormatter
 
 	files             [4]*os.File
 	dirName           string
@@ -27,14 +27,14 @@ type RollingFileAppender struct {
 	checkRollingCount int
 }
 
-func NewRollingFileAppender(flag int, levelFilter int, dirName string, fileNamePrefix string, maxFileSize int64) *RollingFileAppender {
+func NewRollingFileAppender(levelFilter int, flag int, dirName string, fileNamePrefix string, maxFileSize int64) *RollingFileAppender {
 	if maxFileSize <= 0 {
 		panic("maxFileSize <= 0")
 	}
 
 	var my = &RollingFileAppender{
-		formatter:   newMessageFormatter(flag, levelHints),
 		levelFilter: levelFilter,
+		formatter:   newMessageFormatter(flag, levelHints),
 
 		dirName:        dirName,
 		fileNamePrefix: fileNamePrefix,

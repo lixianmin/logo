@@ -13,7 +13,7 @@ func init() {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	logger.SetFuncCallDepth(3)
 
-	var console = NewConsoleAppender(flag, LevelInfo)
+	var console = NewConsoleAppender(LevelInfo, flag)
 	logger.AddAppender(console)
 }
 

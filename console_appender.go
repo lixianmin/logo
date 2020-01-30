@@ -12,14 +12,14 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type ConsoleAppender struct {
-	formatter   *MessageFormatter
 	levelFilter int
+	formatter   *MessageFormatter
 }
 
-func NewConsoleAppender(flag int, levelFilter int) *ConsoleAppender {
+func NewConsoleAppender(levelFilter int, flag int) *ConsoleAppender {
 	var my = &ConsoleAppender{
-		formatter:   newMessageFormatter(flag, levelHintsConsole),
 		levelFilter: levelFilter,
+		formatter:   newMessageFormatter(flag, levelHintsConsole),
 	}
 
 	return my
