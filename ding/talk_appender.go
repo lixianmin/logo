@@ -2,7 +2,7 @@ package ding
 
 import (
 	"fmt"
-	"github.com/lixianmin/btc-trade/app/core/logo"
+	"github.com/lixianmin/logo"
 	"path"
 )
 

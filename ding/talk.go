@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/lixianmin/btc-trade/app/core/logo"
+	"github.com/lixianmin/logo"
 	"io/ioutil"
 	"net/http"
 	"time"
