@@ -11,18 +11,18 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type ConsoleArgs struct {
+type ConsoleAppenderArgs struct {
 	Flag        int
 	LevelFilter int
 }
 
 type ConsoleAppender struct {
-	args      ConsoleArgs
+	args      ConsoleAppenderArgs
 	formatter *MessageFormatter
 }
 
-func NewConsoleAppender(args ConsoleArgs) *ConsoleAppender {
-	checkConsoleArgs(&args)
+func NewConsoleAppender(args ConsoleAppenderArgs) *ConsoleAppender {
+	checkConsoleAppenderArgs(&args)
 
 	var my = &ConsoleAppender{
 		args:      args,
@@ -58,7 +58,7 @@ func (my *ConsoleAppender) writeMessage(fout *os.File, message Message) {
 	_, _ = fout.Write(buffer)
 }
 
-func checkConsoleArgs(args *ConsoleArgs) {
+func checkConsoleAppenderArgs(args *ConsoleAppenderArgs) {
 	if args.LevelFilter <= 0 {
 		args.LevelFilter = LevelInfo
 	}

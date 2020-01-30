@@ -13,17 +13,18 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type TalkArgs struct {
+// 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
+type TalkAppenderArgs struct {
 	Talker      *Talk
 	LevelFilter int
 }
 
 type TalkAppender struct {
-	args TalkArgs
+	args TalkAppenderArgs
 }
 
-func NewTalkAppender(args TalkArgs) *TalkAppender {
-	checkTalkArgs(&args)
+func NewTalkAppender(args TalkAppenderArgs) *TalkAppender {
+	checkTalkAppenderArgs(&args)
 
 	var my = &TalkAppender{
 		args: args,
@@ -58,7 +59,7 @@ func (my *TalkAppender) Close() error {
 	return nil
 }
 
-func checkTalkArgs(args *TalkArgs) {
+func checkTalkAppenderArgs(args *TalkAppenderArgs) {
 	if args.Talker == nil {
 		panic("Talker should not be null")
 	}

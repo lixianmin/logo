@@ -16,7 +16,7 @@ Copyright (C) - All Rights Reserved
 
 var levelNames = []string{"", "info", "warn", "error"}
 
-type RollingFileArgs struct {
+type RollingFileAppenderArgs struct {
 	Flag           int
 	LevelFilter    int
 	DirName        string
@@ -25,15 +25,15 @@ type RollingFileArgs struct {
 }
 
 type RollingFileAppender struct {
-	args      RollingFileArgs
+	args      RollingFileAppenderArgs
 	formatter *MessageFormatter
 
 	files             [4]*os.File
 	checkRollingCount int
 }
 
-func NewRollingFileAppender(args RollingFileArgs) *RollingFileAppender {
-	checkRollingFileArgs(&args)
+func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
+	checkRollingFileAppenderArgs(&args)
 
 	var my = &RollingFileAppender{
 		args:      args,
@@ -166,7 +166,7 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	return err
 }
 
-func checkRollingFileArgs(args *RollingFileArgs) {
+func checkRollingFileAppenderArgs(args *RollingFileAppenderArgs) {
 	if args.LevelFilter <= 0 {
 		args.LevelFilter = LevelInfo
 	}
