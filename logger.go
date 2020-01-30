@@ -3,6 +3,7 @@ package logo
 import (
 	"fmt"
 	"runtime"
+	"strings"
 	"sync"
 )
 
@@ -77,18 +78,19 @@ func (my *Logger) Close() error {
 	return nil
 }
 
-func (my *Logger) Info(format string, args ...interface{}) {
-	var text = fmt.Sprintf(format, args...)
+// 第一个参数有可能是format，也有可能是任意其它类型的对象
+func (my *Logger) Info(first interface{}, args ...interface{}) {
+	var text = formatLog(first, args...)
 	my.pushMessage(Message{text: text, level: LevelInfo})
 }
 
-func (my *Logger) Warn(format string, args ...interface{}) {
-	var text = fmt.Sprintf(format, args...)
+func (my *Logger) Warn(first interface{}, args ...interface{}) {
+	var text = formatLog(first, args...)
 	my.pushMessage(Message{text: text, level: LevelWarn})
 }
 
-func (my *Logger) Error(format string, args ...interface{}) {
-	var text = fmt.Sprintf(format, args...)
+func (my *Logger) Error(first interface{}, args ...interface{}) {
+	var text = formatLog(first, args...)
 	my.pushMessage(Message{text: text, level: LevelError})
 }
 
@@ -112,4 +114,28 @@ func (my *Logger) writeMessage(message Message) {
 	for _, appender := range my.appenderList {
 		appender.Write(message)
 	}
+}
+
+func formatLog(first interface{}, args ...interface{}) string {
+	var msg string
+	switch first.(type) {
+	case string:
+		msg = first.(string)
+		if len(args) == 0 {
+			return msg
+		}
+		if strings.Contains(msg, "%") && !strings.Contains(msg, "%%") {
+			//format string
+		} else {
+			//do not contain format char
+			msg += strings.Repeat(" %v", len(args))
+		}
+	default:
+		msg = fmt.Sprint(first)
+		if len(args) == 0 {
+			return msg
+		}
+		msg += strings.Repeat(" %v", len(args))
+	}
+	return fmt.Sprintf(msg, args...)
 }

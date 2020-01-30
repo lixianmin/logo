@@ -25,14 +25,14 @@ func AddAppender(appender Appender) {
 	logger.AddAppender(appender)
 }
 
-func Info(format string, args ...interface{}) {
-	logger.Info(format, args...)
+func Info(first interface{}, args ...interface{}) {
+	logger.Info(first, args...)
 }
 
-func Warn(format string, args ...interface{}) {
-	logger.Warn(format, args...)
+func Warn(first interface{}, args ...interface{}) {
+	logger.Warn(first, args...)
 }
 
-func Error(format string, args ...interface{}) {
-	logger.Error(format, args...)
+func Error(first interface{}, args ...interface{}) {
+	logger.Error(first, args...)
 }

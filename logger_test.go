@@ -45,3 +45,8 @@ func TestRollingFileAppender(t *testing.T) {
 
 	_ = l.Close()
 }
+
+func TestLogAnyObject(t *testing.T) {
+	Info(123.45678)
+	_ = Close()
+}
