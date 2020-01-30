@@ -58,6 +58,8 @@ func (my *Logger) SetFuncCallDepth(depth int) {
 	my.funcCallDepth = depth
 }
 
+// 这个方法是否需要考虑设计成线程安全？
+// 暂时没有必要：appender列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
 func (my *Logger) AddAppender(appender Appender) {
 	if appender != nil {
 		my.appenderList = append(my.appenderList, appender)
