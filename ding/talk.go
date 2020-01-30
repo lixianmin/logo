@@ -25,6 +25,10 @@ type Talk struct {
 }
 
 func NewTalk(titlePrefix string, token string) *Talk {
+	if token == "" {
+		panic("token should not be empty")
+	}
+	
 	var talk = &Talk{
 		titlePrefix: titlePrefix,
 		token:       token,
