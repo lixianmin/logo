@@ -3,6 +3,7 @@ package logo
 import (
 	"fmt"
 	"runtime"
+	"sync"
 )
 
 /********************************************************************
@@ -16,7 +17,9 @@ type Logger struct {
 	appenderList  []Appender
 	funcCallDepth int
 	messageChan   chan Message
-	wc            *WaitClose
+
+	wc        *WaitClose
+	waitClose sync.WaitGroup
 }
 
 func NewLogger() *Logger {
@@ -26,6 +29,7 @@ func NewLogger() *Logger {
 		wc:            NewWaitClose(),
 	}
 
+	logger.waitClose.Add(1)
 	go logger.goLoop()
 	return logger
 }
@@ -37,6 +41,13 @@ func (my *Logger) goLoop() {
 		case message := <-my.messageChan:
 			my.writeMessage(message)
 		case <-my.wc.CloseChan:
+			var count = len(my.messageChan)
+			for i := 0; i < count; i++ {
+				var message = <-my.messageChan
+				my.writeMessage(message)
+			}
+
+			my.waitClose.Done()
 			return
 		}
 	}
@@ -53,13 +64,8 @@ func (my *Logger) AddAppender(appender Appender) {
 }
 
 func (my *Logger) Close() error {
-	var count = len(my.messageChan)
-	for i := 0; i < count; i++ {
-		var message = <-my.messageChan
-		my.writeMessage(message)
-	}
-
 	_ = my.wc.Close()
+	my.waitClose.Wait()
 
 	for _, appender := range my.appenderList {
 		var err = appender.Close()
