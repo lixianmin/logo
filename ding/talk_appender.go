@@ -13,20 +13,20 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type TalkAppender struct {
-	levelFilter int
-
-	talk *Talk
+type TalkArgs struct {
+	Talker      *Talk
+	LevelFilter int
 }
 
-func NewTalkAppender(levelFilter int, talk *Talk) *TalkAppender {
-	if talk == nil {
-		panic("talk should not be null")
-	}
+type TalkAppender struct {
+	args TalkArgs
+}
+
+func NewTalkAppender(args TalkArgs) *TalkAppender {
+	checkTalkArgs(&args)
 
 	var my = &TalkAppender{
-		levelFilter: levelFilter,
-		talk:        talk,
+		args: args,
 	}
 
 	return my
@@ -34,7 +34,8 @@ func NewTalkAppender(levelFilter int, talk *Talk) *TalkAppender {
 
 func (my *TalkAppender) Write(message logo.Message) {
 	var level = message.GetLevel()
-	if level < my.levelFilter {
+	var args = my.args
+	if level < args.LevelFilter {
 		return
 	}
 
@@ -42,16 +43,27 @@ func (my *TalkAppender) Write(message logo.Message) {
 	var lineNum = message.GetLineNum()
 	var text = fmt.Sprintf("[%s:%d] %s", path.Base(filePath), lineNum, message.GetText())
 
+	var talker = args.Talker
 	switch level {
 	case logo.LevelInfo:
-		my.talk.SendInfo("", text)
+		talker.SendInfo("", text)
 	case logo.LevelWarn:
-		my.talk.SendWarn("", text)
+		talker.SendWarn("", text)
 	case logo.LevelError:
-		my.talk.SendError("", text)
+		talker.SendError("", text)
 	}
 }
 
 func (my *TalkAppender) Close() error {
 	return nil
+}
+
+func checkTalkArgs(args *TalkArgs) {
+	if args.Talker == nil {
+		panic("Talker should not be null")
+	}
+
+	if args.LevelFilter <= 0 {
+		args.LevelFilter = logo.LevelInfo
+	}
 }

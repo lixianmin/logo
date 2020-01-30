@@ -11,15 +11,22 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type ConsoleAppender struct {
-	levelFilter int
-	formatter   *MessageFormatter
+type ConsoleArgs struct {
+	Flag        int
+	LevelFilter int
 }
 
-func NewConsoleAppender(levelFilter int, flag int) *ConsoleAppender {
+type ConsoleAppender struct {
+	args      ConsoleArgs
+	formatter *MessageFormatter
+}
+
+func NewConsoleAppender(args ConsoleArgs) *ConsoleAppender {
+	checkConsoleArgs(&args)
+
 	var my = &ConsoleAppender{
-		levelFilter: levelFilter,
-		formatter:   newMessageFormatter(flag, levelHintsConsole),
+		args:      args,
+		formatter: newMessageFormatter(args.Flag, levelHintsConsole),
 	}
 
 	return my
@@ -27,7 +34,8 @@ func NewConsoleAppender(levelFilter int, flag int) *ConsoleAppender {
 
 func (my *ConsoleAppender) Write(message Message) {
 	var level = message.GetLevel()
-	if level < my.levelFilter {
+	var args = my.args
+	if level < args.LevelFilter {
 		return
 	}
 
@@ -48,4 +56,10 @@ func (my *ConsoleAppender) Close() error {
 func (my *ConsoleAppender) writeMessage(fout *os.File, message Message) {
 	var buffer = my.formatter.format(message)
 	_, _ = fout.Write(buffer)
+}
+
+func checkConsoleArgs(args *ConsoleArgs) {
+	if args.LevelFilter <= 0 {
+		args.LevelFilter = LevelInfo
+	}
 }

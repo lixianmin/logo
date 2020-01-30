@@ -15,7 +15,7 @@ func TestConsoleAppender(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(2)
 
-	var console = NewConsoleAppender(LevelInfo, flag)
+	var console = NewConsoleAppender(ConsoleArgs{Flag: flag})
 	l.AddAppender(console)
 
 	l.Info("This is info")
@@ -31,7 +31,12 @@ func TestRollingFileAppender(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(2)
 
-	var console = NewRollingFileAppender(LevelInfo, flag, "logs", "log_", 16)
+	var console = NewRollingFileAppender(RollingFileArgs{
+		LevelFilter: LevelWarn,
+		Flag:        flag,
+		MaxFileSize: 16,
+	})
+
 	l.AddAppender(console)
 
 	l.Info("This is info")

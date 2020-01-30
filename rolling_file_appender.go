@@ -16,32 +16,31 @@ Copyright (C) - All Rights Reserved
 
 var levelNames = []string{"", "info", "warn", "error"}
 
+type RollingFileArgs struct {
+	Flag           int
+	LevelFilter    int
+	DirName        string
+	FileNamePrefix string
+	MaxFileSize    int64
+}
+
 type RollingFileAppender struct {
-	levelFilter int
-	formatter   *MessageFormatter
+	args      RollingFileArgs
+	formatter *MessageFormatter
 
 	files             [4]*os.File
-	dirName           string
-	fileNamePrefix    string
-	maxFileSize       int64
 	checkRollingCount int
 }
 
-func NewRollingFileAppender(levelFilter int, flag int, dirName string, fileNamePrefix string, maxFileSize int64) *RollingFileAppender {
-	if maxFileSize <= 0 {
-		panic("maxFileSize <= 0")
-	}
+func NewRollingFileAppender(args RollingFileArgs) *RollingFileAppender {
+	checkRollingFileArgs(&args)
 
 	var my = &RollingFileAppender{
-		levelFilter: levelFilter,
-		formatter:   newMessageFormatter(flag, levelHints),
-
-		dirName:        dirName,
-		fileNamePrefix: fileNamePrefix,
-		maxFileSize:    maxFileSize,
+		args:      args,
+		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	var err = EnsureDir(dirName, 0777)
+	var err = EnsureDir(args.DirName, 0777)
 	err = my.openLogFile(LevelInfo)
 	err = my.openLogFile(LevelWarn)
 	err = my.openLogFile(LevelError)
@@ -55,7 +54,7 @@ func NewRollingFileAppender(levelFilter int, flag int, dirName string, fileNameP
 
 func (my *RollingFileAppender) Write(message Message) {
 	var level = message.GetLevel()
-	if level < my.levelFilter {
+	if level < my.args.LevelFilter {
 		return
 	}
 
@@ -119,13 +118,14 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 		return err
 	}
 
+	var args = my.args
 	var size = info.Size()
-	if size <= my.maxFileSize {
+	if size <= args.MaxFileSize {
 		return nil
 	}
 
 	var levelName = levelNames[level]
-	var dirName = path.Join(my.dirName, levelName)
+	var dirName = path.Join(args.DirName, levelName)
 	err = EnsureDir(dirName, 0777)
 
 	var lastPath = fout.Name()
@@ -136,8 +136,8 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 	year, month, day := now.Date()
 
 	for i := 1; true; i++ {
-		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", my.fileNamePrefix, levelName, year, month, day, i)
-		var nextPath = path.Join(my.dirName, levelName, name)
+		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", args.FileNamePrefix, levelName, year, month, day, i)
+		var nextPath = path.Join(args.DirName, levelName, name)
 		if IsPathExist(nextPath) {
 			continue
 		}
@@ -158,9 +158,28 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	const fileFlag = os.O_WRONLY | os.O_CREATE | os.O_APPEND
 	const fileMode = 0666
 
-	var filepath = path.Join(my.dirName, my.fileNamePrefix+levelNames[level]+".log")
+	var args = my.args
+	var filepath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
 	var err error
 	my.files[level], err = os.OpenFile(filepath, fileFlag, fileMode)
 
 	return err
+}
+
+func checkRollingFileArgs(args *RollingFileArgs) {
+	if args.LevelFilter <= 0 {
+		args.LevelFilter = LevelInfo
+	}
+
+	if args.DirName == "" {
+		args.DirName = "logs"
+	}
+
+	if args.FileNamePrefix == "" {
+		args.FileNamePrefix = "log_"
+	}
+
+	if args.MaxFileSize <= 0 {
+		args.MaxFileSize = 10 * 1024 * 1024 // 默认大小为10M
+	}
 }
