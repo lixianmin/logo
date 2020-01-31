@@ -16,11 +16,11 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type Logger struct {
+	Flag
 	appenderList  []Appender
 	funcCallDepth int
 	messageChan   chan Message
 
-	autoFlush bool
 	waitFlush sync.WaitGroup
 	wc        *WaitClose
 }
@@ -30,7 +30,7 @@ func NewLogger() *Logger {
 	var logger = &Logger{
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
-		autoFlush:     true,
+		Flag:          Flag{flags: LogAutoFlush},
 		wc:            NewWaitClose(),
 	}
 
@@ -52,10 +52,6 @@ func (my *Logger) goLoop() {
 
 func (my *Logger) SetFuncCallDepth(depth int) {
 	my.funcCallDepth = depth
-}
-
-func (my *Logger) SetAutoFlush(auto bool) {
-	my.autoFlush = auto
 }
 
 // 这个方法是否需要考虑设计成线程安全？
@@ -119,7 +115,7 @@ func (my *Logger) pushMessage(message Message) {
 	my.messageChan <- message
 
 	// 如果开启了autoFlush
-	if my.autoFlush {
+	if my.HasFlag(LogAutoFlush) {
 		my.Flush()
 	}
 }
