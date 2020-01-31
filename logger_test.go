@@ -68,5 +68,5 @@ func TestAutoFlush(t *testing.T) {
 		i++
 	}
 
-	//logger.Flush()
+	logger.Flush()
 }
