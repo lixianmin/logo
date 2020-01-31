@@ -55,10 +55,6 @@ func (my *TalkAppender) Write(message logo.Message) {
 	}
 }
 
-func (my *TalkAppender) Close() error {
-	return nil
-}
-
 func checkTalkAppenderArgs(args *TalkAppenderArgs) {
 	if args.Talker == nil {
 		panic("Talker should not be null")

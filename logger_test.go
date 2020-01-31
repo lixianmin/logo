@@ -21,8 +21,6 @@ func TestConsoleAppender(t *testing.T) {
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
-
-	_ = l.Close()
 }
 
 func TestRollingFileAppender(t *testing.T) {
@@ -42,11 +40,33 @@ func TestRollingFileAppender(t *testing.T) {
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
-
-	_ = l.Close()
 }
 
 func TestLogAnyObject(t *testing.T) {
 	Info(123.45678)
-	_ = Close()
+	Info(t)
+}
+
+func TestAutoFlush(t *testing.T) {
+
+	logger.SetAutoFlush(false)
+	var i = 0
+	for i < 10 {
+		Info(i)
+		i++
+	}
+
+	logger.SetAutoFlush(true)
+	for i < 20 {
+		Warn(i)
+		i++
+	}
+
+	logger.SetAutoFlush(false)
+	for i < 30 {
+		Error(i)
+		i++
+	}
+
+	logger.Flush()
 }

@@ -17,12 +17,8 @@ func init() {
 	logger.AddAppender(console)
 }
 
-func Close() error {
-	return logger.Close()
-}
-
-func AddAppender(appender Appender) {
-	logger.AddAppender(appender)
+func GetLogger() *Logger {
+	return logger
 }
 
 func Info(first interface{}, args ...interface{}) {

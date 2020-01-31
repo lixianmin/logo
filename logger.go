@@ -2,6 +2,7 @@ package logo
 
 import (
 	"fmt"
+	"io"
 	"runtime"
 	"strings"
 	"sync"
@@ -19,18 +20,20 @@ type Logger struct {
 	funcCallDepth int
 	messageChan   chan Message
 
+	autoFlush bool
+	waitFlush sync.WaitGroup
 	wc        *WaitClose
-	waitClose sync.WaitGroup
 }
 
 func NewLogger() *Logger {
+	const chanLen = 128
 	var logger = &Logger{
 		funcCallDepth: -1,
-		messageChan:   make(chan Message, 128),
+		messageChan:   make(chan Message, chanLen),
+		autoFlush:     true,
 		wc:            NewWaitClose(),
 	}
 
-	logger.waitClose.Add(1)
 	go logger.goLoop()
 	return logger
 }
@@ -42,13 +45,6 @@ func (my *Logger) goLoop() {
 		case message := <-my.messageChan:
 			my.writeMessage(message)
 		case <-my.wc.CloseChan:
-			var count = len(my.messageChan)
-			for i := 0; i < count; i++ {
-				var message = <-my.messageChan
-				my.writeMessage(message)
-			}
-
-			my.waitClose.Done()
 			return
 		}
 	}
@@ -56,6 +52,10 @@ func (my *Logger) goLoop() {
 
 func (my *Logger) SetFuncCallDepth(depth int) {
 	my.funcCallDepth = depth
+}
+
+func (my *Logger) SetAutoFlush(auto bool) {
+	my.autoFlush = auto
 }
 
 // 这个方法是否需要考虑设计成线程安全？
@@ -66,14 +66,20 @@ func (my *Logger) AddAppender(appender Appender) {
 	}
 }
 
+func (my *Logger) Flush() {
+	my.waitFlush.Wait()
+}
+
 func (my *Logger) Close() error {
 	_ = my.wc.Close()
-	my.waitClose.Wait()
+	my.Flush()
 
 	for _, appender := range my.appenderList {
-		var err = appender.Close()
-		if err != nil {
-			fmt.Println(err)
+		if closer, ok := appender.(io.Closer); ok {
+			var err = closer.Close()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 
@@ -109,13 +115,21 @@ func (my *Logger) pushMessage(message Message) {
 		message.lineNum = line
 	}
 
+	my.waitFlush.Add(1)
 	my.messageChan <- message
+
+	// 如果开启了autoFlush
+	if my.autoFlush {
+		my.Flush()
+	}
 }
 
 func (my *Logger) writeMessage(message Message) {
 	for _, appender := range my.appenderList {
 		appender.Write(message)
 	}
+
+	my.waitFlush.Add(-1)
 }
 
 func formatLog(first interface{}, args ...interface{}) string {

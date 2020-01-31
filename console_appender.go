@@ -49,10 +49,6 @@ func (my *ConsoleAppender) Write(message Message) {
 	}
 }
 
-func (my *ConsoleAppender) Close() error {
-	return nil
-}
-
 func (my *ConsoleAppender) writeMessage(fout *os.File, message Message) {
 	var buffer = my.formatter.format(message)
 	_, _ = fout.Write(buffer)
