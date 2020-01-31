@@ -45,9 +45,9 @@
 
 ```go
 func main() {
-  // main()方法退出时关闭logger以及所有实现了Closer接口的appenders
-  defer logo.GetDefaultLogger().Close()
-	
+	// main()方法退出时关闭logger以及所有实现了Closer接口的appenders
+	defer logo.GetDefaultLogger().Close()
+
 	// 开启异步写标记，提高日志输出性能
 	var logger = logo.GetDefaultLogger()
 	logger.AddFlag(logo.LogAsyncWrite)
@@ -56,11 +56,11 @@ func main() {
 	const flag = logo.FlagDate | logo.FlagTime | logo.FlagShortFile | logo.FlagLevel
 	var rollingFile = logo.NewRollingFileAppender(logo.RollingFileAppenderArgs{Flag: flag})
 	logger.AddAppender(rollingFile)
-  
+
 	// 下面是业务代码
-  logo.Info(1234.5678)
-  logo.Warn("ding talk")
-  logo.Error("hello, %s", "logo")
+	logo.Info(1234.5678)
+	logo.Warn("ding talk")
+	logo.Error("hello, %s", "logo")
 }
 ```
 
