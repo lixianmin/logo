@@ -12,6 +12,8 @@ Copyright (C) - All Rights Reserved
 
 func TestAddFlag(t *testing.T) {
 	var f = Flag{}
+
+	// 同一个flag可以多次加入
 	f.AddFlag(1)
 	f.AddFlag(1)
 
@@ -21,6 +23,12 @@ func TestAddFlag(t *testing.T) {
 
 	f.RemoveFlag(1)
 	if f.HasFlag(1) {
+		t.Failed()
+	}
+
+	// 同一个flag可以多次移除
+	f.RemoveFlag(1)
+	if f.HasFlag(1)  {
 		t.Failed()
 	}
 }
