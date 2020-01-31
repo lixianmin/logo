@@ -12,8 +12,8 @@ const (
 	LevelWarn  = 2
 	LevelError = 3
 
-	LogNone      = 0x0000
-	LogAutoFlush = 0x0001 // 同步落盘标志
+	LogNone       = 0x0000
+	LogAsyncWrite = 0x0001 // 异步落盘标志，提高写性能，但需要在退出时主动Flush，否则可能会丢失数据
 
 	FlagNone      = 0x0000
 	FlagDate      = 0x0001 // 1998-10-29

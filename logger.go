@@ -30,7 +30,6 @@ func NewLogger() *Logger {
 	var logger = &Logger{
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
-		Flag:          Flag{flags: LogAutoFlush},
 		wc:            NewWaitClose(),
 	}
 
@@ -114,8 +113,8 @@ func (my *Logger) pushMessage(message Message) {
 	my.waitFlush.Add(1)
 	my.messageChan <- message
 
-	// 如果开启了autoFlush
-	if my.HasFlag(LogAutoFlush) {
+	// 如果未开启异步写模式
+	if !my.HasFlag(LogAsyncWrite) {
 		my.Flush()
 	}
 }

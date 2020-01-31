@@ -48,24 +48,24 @@ func TestLogAnyObject(t *testing.T) {
 }
 
 func TestAutoFlush(t *testing.T) {
-	logger.RemoveFlag(LogAutoFlush)
+	logger.AddFlag(LogAsyncWrite)
 	var i = 0
 	for i < 10 {
 		Info(i)
 		i++
 	}
 
-	logger.AddFlag(LogAutoFlush)
+	logger.RemoveFlag(LogAsyncWrite)
 	for i < 20 {
 		Warn(i)
 		i++
 	}
 
-	logger.RemoveFlag(LogAutoFlush)
+	logger.AddFlag(LogAsyncWrite)
 	for i < 30 {
 		Error(i)
 		i++
 	}
 
-	logger.Flush()
+	//logger.Flush()
 }
