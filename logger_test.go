@@ -70,3 +70,14 @@ func TestAutoFlush(t *testing.T) {
 
 	logger.Flush()
 }
+
+func TestClose(t *testing.T) {
+	var logger = GetDefaultLogger()
+	logger.AddFlag(LogAsyncWrite)
+
+	for i := 0; i < 50; i++ {
+		logger.Info(i)
+	}
+
+	_ = logger.Close()
+}

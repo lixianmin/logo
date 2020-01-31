@@ -66,8 +66,10 @@ func (my *Logger) Flush() {
 }
 
 func (my *Logger) Close() error {
-	_ = my.wc.Close()
+	// Flush()需要放到wc.Close()的前面。
+	// 否则如果先调用wc.Close()的话，一旦goLoop()的协程先于Flush()退出，则Flush()方法可能死锁
 	my.Flush()
+	_ = my.wc.Close()
 
 	for _, appender := range my.appenderList {
 		if closer, ok := appender.(io.Closer); ok {
