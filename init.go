@@ -7,28 +7,28 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-var logger = NewLogger()
+var defaultLogger = NewLogger()
 
 func init() {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
-	logger.SetFuncCallDepth(3)
+	defaultLogger.SetFuncCallDepth(3)
 
 	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag})
-	logger.AddAppender(console)
+	defaultLogger.AddAppender(console)
 }
 
-func GetLogger() *Logger {
-	return logger
+func GetDefaultLogger() *Logger {
+	return defaultLogger
 }
 
 func Info(first interface{}, args ...interface{}) {
-	logger.Info(first, args...)
+	defaultLogger.Info(first, args...)
 }
 
 func Warn(first interface{}, args ...interface{}) {
-	logger.Warn(first, args...)
+	defaultLogger.Warn(first, args...)
 }
 
 func Error(first interface{}, args ...interface{}) {
-	logger.Error(first, args...)
+	defaultLogger.Error(first, args...)
 }
