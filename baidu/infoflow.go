@@ -63,11 +63,11 @@ func (talk *InfoFlow) goLoop() {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg InfoFlowMessage) {
-		var text = msg.Text + "  \n  " + msg.Timestamp.Format(time.RFC3339)
+		const layout = "2006-01-02 15:04:05"
+		var text = msg.Text + "\n" + msg.Timestamp.Format(layout)
 
 		var title1 = fmt.Sprintf("[%s: %s] %s", msg.Level, talk.titlePrefix, msg.Title)
-		var text1 = fmt.Sprintf("### %s  \n  %s", title1, text)
-		_, _ = SendMarkdown(title1, text1, msg.Token)
+		_, _ = SendMarkdown(title1, text, msg.Token)
 	}
 
 	for {
@@ -114,11 +114,9 @@ func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 }
 
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
-	var content = "####" + title + "\n" + text
-	var message = Markdown{Message: MarkdownMessage{Body: MarkdownBody{
-		Type:    "MD",
-		Content: content,
-	}}}
+	var content = "#### " + title + "\n" + text
+	var message = Markdown{Message: MarkdownMessage{Body: []MarkdownBody{
+		{Type: "MD", Content: content},}}}
 
 	var data, err = json.Marshal(message)
 	if err != nil {

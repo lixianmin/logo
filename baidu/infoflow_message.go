@@ -23,9 +23,9 @@ type MarkdownBody struct {
 }
 
 type MarkdownMessage struct {
-	Body MarkdownBody `json:"body"`
+	Body []MarkdownBody `json:"body"`
 }
 
 type Markdown struct {
-	Message MarkdownMessage `json:message`
+	Message MarkdownMessage `json:"message"`
 }
