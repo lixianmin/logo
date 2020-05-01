@@ -17,7 +17,15 @@ type InfoFlowMessage struct {
 	Token     string
 }
 
-type MarkdownMessage struct {
+type MarkdownBody struct {
 	Type    string `json:"type"`
 	Content string `json:"content"`
+}
+
+type MarkdownMessage struct {
+	Body MarkdownBody `json:"body"`
+}
+
+type Markdown struct {
+	Message MarkdownMessage `json:message`
 }

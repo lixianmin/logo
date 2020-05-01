@@ -115,7 +115,11 @@ func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
 	var content = "####" + title + "\n" + text
-	var message = MarkdownMessage{Type: "MD", Content: content}
+	var message = Markdown{Message: MarkdownMessage{Body: MarkdownBody{
+		Type:    "MD",
+		Content: content,
+	}}}
+
 	var data, err = json.Marshal(message)
 	if err != nil {
 		return nil, err
