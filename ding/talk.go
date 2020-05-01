@@ -60,7 +60,8 @@ func (talk *Talk) goLoop() {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg TalkMessage) {
-		var text = msg.Text + "  \n  " + msg.Timestamp.Format(time.RFC3339)
+		const layout = "2006-01-02 15:04:05"
+		var text = msg.Text + "  \n  " + msg.Timestamp.Format(layout)
 
 		var title1 = fmt.Sprintf("[%s: %s] %s", msg.Level, talk.titlePrefix, msg.Title)
 		var text1 = fmt.Sprintf("### %s  \n  %s", title1, text)
