@@ -7,6 +7,7 @@ import (
 	"github.com/lixianmin/logo"
 	"io/ioutil"
 	"net/http"
+	"sync/atomic"
 	"time"
 )
 
@@ -18,17 +19,18 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type Talk struct {
-	titlePrefix string
-	token       string
-	messageChan chan TalkMessage
-	wc          *logo.WaitClose
+	titlePrefix  string
+	token        string
+	messageChan  chan TalkMessage
+	wc           *logo.WaitClose
+	sendingCount int32
 }
 
 func NewTalk(titlePrefix string, token string) *Talk {
 	if token == "" {
 		panic("token should not be empty")
 	}
-	
+
 	var talk = &Talk{
 		titlePrefix: titlePrefix,
 		token:       token,
@@ -60,6 +62,7 @@ func (talk *Talk) goLoop() {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg TalkMessage) {
+		atomic.AddInt32(&talk.sendingCount, -1)
 		const layout = "2006-01-02 15:04:05"
 		var text = msg.Text + "  \n  " + msg.Timestamp.Format(layout)
 
@@ -102,6 +105,7 @@ func (talk *Talk) SendError(title string, text string) {
 }
 
 func (talk *Talk) sendMessage(title string, text string, level string) {
+	atomic.AddInt32(&talk.sendingCount, 1)
 	talk.messageChan <- TalkMessage{
 		Level:     level,
 		Title:     title,
