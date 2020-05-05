@@ -7,6 +7,7 @@ import (
 	"github.com/lixianmin/logo"
 	"io/ioutil"
 	"net/http"
+	"sync/atomic"
 	"time"
 )
 
@@ -18,10 +19,11 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type InfoFlow struct {
-	titlePrefix string
-	token       string
-	messageChan chan InfoFlowMessage
-	wc          *logo.WaitClose
+	titlePrefix  string
+	token        string
+	messageChan  chan InfoFlowMessage
+	wc           *logo.WaitClose
+	sendingCount int32
 }
 
 func NewInfoFlow(titlePrefix string, token string) *InfoFlow {
@@ -63,6 +65,7 @@ func (talk *InfoFlow) goLoop() {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg InfoFlowMessage) {
+		atomic.AddInt32(&talk.sendingCount, -1)
 		const layout = "2006-01-02 15:04:05"
 		var text = msg.Text + "\n" + msg.Timestamp.Format(layout)
 
@@ -104,6 +107,7 @@ func (talk *InfoFlow) SendError(title string, text string) {
 }
 
 func (talk *InfoFlow) sendMessage(title string, text string, level string) {
+	atomic.AddInt32(&talk.sendingCount, 1)
 	talk.messageChan <- InfoFlowMessage{
 		Level:     level,
 		Title:     title,
