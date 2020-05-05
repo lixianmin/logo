@@ -1,4 +1,4 @@
-package baidu
+package ding
 
 import (
 	"testing"
@@ -6,14 +6,14 @@ import (
 )
 
 /********************************************************************
-created:    2020-05-01
+created:    2020-05-05
 author:     lixianmin
 
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-func TestInfoFlow(t *testing.T) {
-	var talk = NewInfoFlow("title前缀", "d2127efaae4cfd31e53e47d919c27ad5c")
+func TestDingTalk(t *testing.T) {
+	var talk = NewTalk("title前缀", "ed23007fe73228e7d16c99504d1c39bf04c8cf8946d6d3a752ccf50158394650")
 	talk.SendInfo("info", "这里是正文")
 	talk.SendWarn("warn", "这里是正文")
 	talk.SendError("error", "这里是正文")
