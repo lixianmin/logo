@@ -15,6 +15,9 @@ import (
 created:    2020-05-01
 author:     lixianmin
 
+目前百度如流（原百度Hi）的robot只能在百度内网使用，设置说明参考文献：
+https://static.im.baidu.com/robotSetDoc/index.html
+
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
