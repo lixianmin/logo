@@ -33,6 +33,10 @@ func NewTalkAppender(args TalkAppenderArgs) *TalkAppender {
 	return my
 }
 
+func (my *TalkAppender) Close() error {
+	return my.args.Talker.Close()
+}
+
 func (my *TalkAppender) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args

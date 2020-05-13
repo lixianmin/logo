@@ -33,6 +33,10 @@ func NewInfoFlowAppender(args InfoFlowAppenderArgs) *InfoFlowAppender {
 	return my
 }
 
+func (my *InfoFlowAppender) Close() error {
+	return my.args.Talker.Close()
+}
+
 func (my *InfoFlowAppender) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args

@@ -2,9 +2,9 @@ package baidu
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/lixianmin/logo"
 	"io/ioutil"
 	"net/http"
 	"sync/atomic"
@@ -25,7 +25,7 @@ type InfoFlow struct {
 	titlePrefix  string
 	token        string
 	messageChan  chan InfoFlowMessage
-	wc           *logo.WaitClose
+	cancel       context.CancelFunc
 	sendingCount int32
 }
 
@@ -34,18 +34,19 @@ func NewInfoFlow(titlePrefix string, token string) *InfoFlow {
 		panic("token should not be empty")
 	}
 
+	var ctx, cancel = context.WithCancel(context.Background())
 	var talk = &InfoFlow{
 		titlePrefix: titlePrefix,
 		token:       token,
 		messageChan: make(chan InfoFlowMessage, 32),
-		wc:          logo.NewWaitClose(),
+		cancel:      cancel,
 	}
 
-	go talk.goLoop()
+	go talk.goLoop(ctx)
 	return talk
 }
 
-func (talk *InfoFlow) goLoop() {
+func (talk *InfoFlow) goLoop(ctx context.Context) {
 	// https://static.im.baidu.com/robotSetDoc/index.html
 	// 消息发送频率限制
 	// 为了保障群成员使用体验，以防收到大量消息的打扰，机器人发消息限制200条/分钟，超出后，将限流10分钟。
@@ -87,14 +88,22 @@ func (talk *InfoFlow) goLoop() {
 				<-bucketChan
 				sendDirect(<-talk.messageChan)
 			}
-		case <-talk.wc.CloseChan:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
 func (talk *InfoFlow) Close() error {
-	return talk.wc.Close()
+	// 给一点点flush的时间
+	const timeout = 1 * time.Second
+	const step = 50 * time.Millisecond
+	for i := 0; talk.sendingCount > 0 && i < int(timeout/step); i++ {
+		time.Sleep(step)
+	}
+
+	talk.cancel()
+	return nil
 }
 
 func (talk *InfoFlow) SendInfo(title string, text string) {

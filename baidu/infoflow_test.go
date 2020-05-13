@@ -3,7 +3,6 @@ package baidu
 import (
 	"github.com/lixianmin/logo"
 	"testing"
-	"time"
 )
 
 /********************************************************************
@@ -18,17 +17,9 @@ func createTalk() *InfoFlow {
 	return talk
 }
 
-func destroyTalk(talk *InfoFlow) {
-	for talk.sendingCount > 0 {
-		time.Sleep(time.Millisecond * 100)
-	}
-
-	talk.Close()
-}
-
 func TestInfoFlow(t *testing.T) {
 	var talk = createTalk()
-	defer destroyTalk(talk)
+	defer talk.Close()
 
 	talk.SendInfo("Info title", "This is an info")
 	talk.SendWarn("Warn title", "This is a warning")
@@ -37,9 +28,9 @@ func TestInfoFlow(t *testing.T) {
 
 func TestInfoFlowAppender(t *testing.T) {
 	var talk = createTalk()
-	defer destroyTalk(talk)
 
 	var l = logo.NewLogger()
+	defer l.Close()
 	l.SetFuncCallDepth(2)
 
 	var talkAppender = NewInfoFlowAppender(InfoFlowAppenderArgs{
