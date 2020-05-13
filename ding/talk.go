@@ -2,9 +2,9 @@ package ding
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/lixianmin/logo"
 	"io/ioutil"
 	"net/http"
 	"sync/atomic"
@@ -22,7 +22,7 @@ type Talk struct {
 	titlePrefix  string
 	token        string
 	messageChan  chan TalkMessage
-	wc           *logo.WaitClose
+	cancel       context.CancelFunc
 	sendingCount int32
 }
 
@@ -31,18 +31,19 @@ func NewTalk(titlePrefix string, token string) *Talk {
 		panic("token should not be empty")
 	}
 
+	var ctx, cancel = context.WithCancel(context.Background())
 	var talk = &Talk{
 		titlePrefix: titlePrefix,
 		token:       token,
 		messageChan: make(chan TalkMessage, 32),
-		wc:          logo.NewWaitClose(),
+		cancel:      cancel,
 	}
 
-	go talk.goLoop()
+	go talk.goLoop(ctx)
 	return talk
 }
 
-func (talk *Talk) goLoop() {
+func (talk *Talk) goLoop(ctx context.Context) {
 	// 令牌桶发生器
 	// 钉钉机器人发送频率限制是 20条/每分钟，如果超过限制，会返回 send too fast 错误信息，
 	// 再发，就返回302错误，并限制发送10分钟
@@ -82,14 +83,22 @@ func (talk *Talk) goLoop() {
 				<-bucketChan
 				sendDirect(<-talk.messageChan)
 			}
-		case <-talk.wc.CloseChan:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
 func (talk *Talk) Close() error {
-	return talk.wc.Close()
+	// 给一点点flush的时间：dingTalk是3s一个令牌，发的很慢的，因此在单元测试里不一定能flush成功
+	const timeout = 1 * time.Second
+	const step = 50 * time.Millisecond
+	for i := 0; talk.sendingCount > 0 && i < int(timeout/step); i++ {
+		time.Sleep(step)
+	}
+
+	talk.cancel()
+	return nil
 }
 
 func (talk *Talk) SendInfo(title string, text string) {

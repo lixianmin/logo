@@ -1,6 +1,7 @@
 package logo
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"runtime"
@@ -22,28 +23,29 @@ type Logger struct {
 	messageChan   chan Message
 
 	waitFlush sync.WaitGroup
-	wc        *WaitClose
+	cancel    context.CancelFunc
 }
 
 func NewLogger() *Logger {
 	const chanLen = 128
+	var ctx, cancel = context.WithCancel(context.Background())
 	var logger = &Logger{
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
-		wc:            NewWaitClose(),
+		cancel:        cancel,
 	}
 
-	go logger.goLoop()
+	go logger.goLoop(ctx)
 	return logger
 }
 
-func (my *Logger) goLoop() {
+func (my *Logger) goLoop(ctx context.Context) {
 	defer DumpIfPanic()
 	for {
 		select {
 		case message := <-my.messageChan:
 			my.writeMessage(message)
-		case <-my.wc.CloseChan:
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -69,7 +71,7 @@ func (my *Logger) Close() error {
 	// Flush()需要放到wc.Close()的前面。
 	// 否则如果先调用wc.Close()的话，一旦goLoop()的协程先于Flush()退出，则Flush()方法可能死锁
 	my.Flush()
-	_ = my.wc.Close()
+	my.cancel()
 
 	for _, appender := range my.appenderList {
 		if closer, ok := appender.(io.Closer); ok {

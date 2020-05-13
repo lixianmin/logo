@@ -5,7 +5,6 @@ import (
 	"github.com/lixianmin/logo"
 	"os"
 	"testing"
-	"time"
 )
 
 /********************************************************************
@@ -27,17 +26,9 @@ func createTalk() *Talk {
 	return talk
 }
 
-func destroyTalk(talk *Talk) {
-	for talk.sendingCount > 0 {
-		time.Sleep(time.Millisecond * 100)
-	}
-
-	talk.Close()
-}
-
 func TestDingTalk(t *testing.T) {
 	var talk = createTalk()
-	defer destroyTalk(talk)
+	defer talk.Close()
 
 	talk.SendInfo("Info title", "This is an info")
 	talk.SendWarn("Warn title", "This is a warning")
@@ -46,9 +37,9 @@ func TestDingTalk(t *testing.T) {
 
 func TestDingTalkAppender(t *testing.T) {
 	var talk = createTalk()
-	defer destroyTalk(talk)
 
 	var l = logo.NewLogger()
+	defer l.Close()
 	l.SetFuncCallDepth(2)
 
 	var talkAppender = NewTalkAppender(TalkAppenderArgs{
@@ -58,7 +49,7 @@ func TestDingTalkAppender(t *testing.T) {
 
 	l.AddAppender(talkAppender)
 
-	l.Info("This is info, but will not appear in ding talk.")
-	l.Warn("This warning will appear in ding talk.")
+	l.Info("This is info, but will not appear in infoflow.")
+	l.Warn("This warning will appear in infoflow.")
 	l.Error("This is an %q.", "error")
 }
