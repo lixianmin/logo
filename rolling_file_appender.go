@@ -14,7 +14,7 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-var levelNames = []string{"", "info", "warn", "error"}
+var levelNames = []string{"", "debug", "info", "warn", "error"}
 
 type RollingFileAppenderArgs struct {
 	Flag           int
@@ -28,7 +28,7 @@ type RollingFileAppender struct {
 	args      RollingFileAppenderArgs
 	formatter *MessageFormatter
 
-	files             [4]*os.File
+	files             [5]*os.File
 	checkRollingCount int
 }
 
@@ -41,6 +41,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 	}
 
 	var err = EnsureDir(args.DirName, 0777)
+	err = my.openLogFile(LevelDebug)
 	err = my.openLogFile(LevelInfo)
 	err = my.openLogFile(LevelWarn)
 	err = my.openLogFile(LevelError)
@@ -58,7 +59,7 @@ func (my *RollingFileAppender) Write(message Message) {
 		return
 	}
 
-	switch message.level {
+	switch level {
 	case LevelError:
 		my.writeMessage(message, LevelError)
 		fallthrough
@@ -67,6 +68,9 @@ func (my *RollingFileAppender) Write(message Message) {
 		fallthrough
 	case LevelInfo:
 		my.writeMessage(message, LevelInfo)
+		fallthrough
+	case LevelDebug:
+		my.writeMessage(message, LevelDebug)
 	}
 }
 

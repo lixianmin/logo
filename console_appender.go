@@ -40,11 +40,9 @@ func (my *ConsoleAppender) Write(message Message) {
 	}
 
 	switch level {
-	case LevelInfo:
+	case LevelDebug, LevelInfo:
 		my.writeMessage(os.Stdout, message)
-	case LevelWarn:
-		my.writeMessage(os.Stderr, message)
-	case LevelError:
+	case LevelWarn, LevelError:
 		my.writeMessage(os.Stderr, message)
 	}
 }
