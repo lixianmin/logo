@@ -8,9 +8,11 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 const (
-	LevelInfo  = 1
-	LevelWarn  = 2
-	LevelError = 3
+	_ = iota
+	LevelDebug
+	LevelInfo
+	LevelWarn
+	LevelError
 
 	LogNone       = 0x0000
 	LogAsyncWrite = 0x0001 // 异步落盘标志，提高写性能，但需要在退出时主动Flush，否则可能会丢失数据
@@ -23,8 +25,8 @@ const (
 	FlagLevel     = 0x0010 // [I], [W], [E]
 )
 
-var levelHints = []string{"", "[I]", "[W]", "[E]"}
-var levelHintsConsole = []string{"1;37", "1;34", "1;33", "1;31"}
+var levelHints = []string{"", "[D]", "[I]", "[W]", "[E]"}
+var levelHintsConsole = []string{"1;37", "1;35", "1;34", "1;33", "1;31"}
 
 func init() {
 	pre := "\033["

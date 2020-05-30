@@ -101,6 +101,10 @@ func (talk *Talk) Close() error {
 	return nil
 }
 
+func (talk *Talk) SendDebug(title string, text string) {
+	talk.sendMessage(title, text, "Debug")
+}
+
 func (talk *Talk) SendInfo(title string, text string) {
 	talk.sendMessage(title, text, "Info")
 }

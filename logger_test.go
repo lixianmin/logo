@@ -15,9 +15,10 @@ func TestConsoleAppender(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(2)
 
-	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag})
+	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag, LevelFilter: LevelDebug})
 	l.AddAppender(console)
 
+	l.Debug("Debug", "Message")
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")

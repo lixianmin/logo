@@ -106,6 +106,10 @@ func (talk *InfoFlow) Close() error {
 	return nil
 }
 
+func (talk *InfoFlow) SendDebug(title string, text string) {
+	talk.sendMessage(title, text, "Debug")
+}
+
 func (talk *InfoFlow) SendInfo(title string, text string) {
 	talk.sendMessage(title, text, "Info")
 }

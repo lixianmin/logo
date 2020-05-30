@@ -86,6 +86,11 @@ func (my *Logger) Close() error {
 }
 
 // 第一个参数有可能是format，也有可能是任意其它类型的对象
+func (my *Logger) Debug(first interface{}, args ...interface{}) {
+	var text = formatLog(first, args...)
+	my.pushMessage(Message{text: text, level: LevelDebug})
+}
+
 func (my *Logger) Info(first interface{}, args ...interface{}) {
 	var text = formatLog(first, args...)
 	my.pushMessage(Message{text: text, level: LevelInfo})

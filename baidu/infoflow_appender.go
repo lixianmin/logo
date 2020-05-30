@@ -50,6 +50,8 @@ func (my *InfoFlowAppender) Write(message logo.Message) {
 
 	var talker = args.Talker
 	switch level {
+	case logo.LevelDebug:
+		talker.SendDebug("", text)
 	case logo.LevelInfo:
 		talker.SendInfo("", text)
 	case logo.LevelWarn:
