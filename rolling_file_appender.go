@@ -18,7 +18,7 @@ var levelNames = []string{"", "debug", "info", "warn", "error"}
 
 type RollingFileAppenderArgs struct {
 	Flag           int
-	LevelFilter    int
+	FilterLevel    int
 	DirName        string
 	FileNamePrefix string
 	MaxFileSize    int64
@@ -55,7 +55,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 
 func (my *RollingFileAppender) Write(message Message) {
 	var level = message.GetLevel()
-	if level < my.args.LevelFilter {
+	if level < my.args.FilterLevel {
 		return
 	}
 
@@ -170,9 +170,15 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	return err
 }
 
+func (my *RollingFileAppender) SetFilterLevel(level int) {
+	if level > LevelNone && level < LevelMax {
+		my.args.FilterLevel = level
+	}
+}
+
 func checkRollingFileAppenderArgs(args *RollingFileAppenderArgs) {
-	if args.LevelFilter <= 0 {
-		args.LevelFilter = LevelInfo
+	if args.FilterLevel <= LevelNone {
+		args.FilterLevel = LevelInfo
 	}
 
 	if args.DirName == "" {

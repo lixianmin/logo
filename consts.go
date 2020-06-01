@@ -8,11 +8,12 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 const (
-	_ = iota
+	LevelNone = iota
 	LevelDebug
 	LevelInfo
 	LevelWarn
 	LevelError
+	LevelMax
 
 	LogNone       = 0x0000
 	LogAsyncWrite = 0x0001 // 异步落盘标志，提高写性能，但需要在退出时主动Flush，否则可能会丢失数据
