@@ -44,10 +44,22 @@ func TestRollingFileAppender(t *testing.T) {
 }
 
 func TestFileAppenderFilterLevel(t *testing.T) {
+	var l = NewLogger()
+
+	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
+	l.SetFuncCallDepth(2)
+
 	var fileAppender = NewRollingFileAppender(RollingFileAppenderArgs{
 		FilterLevel: LevelWarn,
+		Flag:        flag,
 		MaxFileSize: 16,
 	})
+
+	l.AddAppender(fileAppender)
+
+	l.Info("1 warn level: This is info")
+	l.Warn("2 warn level: I am a warning")
+	l.Error("3 warn level: Error occurred")
 
 	if fileAppender.args.FilterLevel != LevelWarn {
 		t.Fatal()
@@ -57,6 +69,12 @@ func TestFileAppenderFilterLevel(t *testing.T) {
 	if fileAppender.args.FilterLevel != LevelInfo {
 		t.Fatal()
 	}
+
+	l.Info("4 info level: This is info")
+	l.Warn("5 info level: I am a warning")
+	l.Error("6 info level: Error occurred")
+
+	_ = l.Close()
 }
 
 func TestLogAnyObject(t *testing.T) {
@@ -97,4 +115,6 @@ func TestClose(t *testing.T) {
 	}
 
 	_ = logger.Close()
+
+	logger.Info("closed")
 }

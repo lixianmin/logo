@@ -73,7 +73,8 @@ func (my *Logger) Close() error {
 	my.Flush()
 	my.cancel()
 
-	for _, appender := range my.appenderList {
+	for i, appender := range my.appenderList {
+		my.appenderList[i] = nil
 		if closer, ok := appender.(io.Closer); ok {
 			var err = closer.Close()
 			if err != nil {
@@ -130,7 +131,9 @@ func (my *Logger) pushMessage(message Message) {
 
 func (my *Logger) writeMessage(message Message) {
 	for _, appender := range my.appenderList {
-		appender.Write(message)
+		if appender != nil {
+			appender.Write(message)
+		}
 	}
 
 	my.waitFlush.Add(-1)

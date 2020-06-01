@@ -28,7 +28,7 @@ type RollingFileAppender struct {
 	args      RollingFileAppenderArgs
 	formatter *MessageFormatter
 
-	files             [5]*os.File
+	files             [LevelMax]*os.File
 	checkRollingCount int
 }
 
@@ -41,13 +41,11 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 	}
 
 	var err = EnsureDir(args.DirName, 0777)
-	err = my.openLogFile(LevelDebug)
-	err = my.openLogFile(LevelInfo)
-	err = my.openLogFile(LevelWarn)
-	err = my.openLogFile(LevelError)
+	checkPrintError(err)
 
-	if err != nil {
-		fmt.Println(err)
+	for level := args.FilterLevel; level < LevelMax; level++ {
+		err = my.openLogFile(level)
+		checkPrintError(err)
 	}
 
 	return my
@@ -55,7 +53,8 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 
 func (my *RollingFileAppender) Write(message Message) {
 	var level = message.GetLevel()
-	if level < my.args.FilterLevel {
+	var filterLevel = my.args.FilterLevel
+	if level < filterLevel {
 		return
 	}
 
@@ -75,12 +74,8 @@ func (my *RollingFileAppender) Write(message Message) {
 }
 
 func (my *RollingFileAppender) Close() error {
-	for i := 0; i < len(my.files); i++ {
-		var fout = my.files[i]
-		if fout != nil {
-			_ = fout.Close()
-			my.files[i] = nil
-		}
+	for level := LevelNone + 1; level < LevelMax; level++ {
+		_ = my.closeLogFile(level)
 	}
 
 	return nil
@@ -100,9 +95,7 @@ func (my *RollingFileAppender) writeMessage(message Message, level int) {
 	}
 
 	err = my.checkRollFile(level)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkPrintError(err)
 }
 
 func (my *RollingFileAppender) checkRollFile(level int) (err error) {
@@ -133,8 +126,8 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 	err = EnsureDir(dirName, 0777)
 
 	var lastPath = fout.Name()
-	err = fout.Close()
 	my.files[level] = nil
+	err = fout.Close()
 
 	var now = time.Now()
 	year, month, day := now.Date()
@@ -159,6 +152,10 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 }
 
 func (my *RollingFileAppender) openLogFile(level int) error {
+	if my.files[level] != nil {
+		return nil
+	}
+
 	const fileFlag = os.O_WRONLY | os.O_CREATE | os.O_APPEND
 	const fileMode = 0666
 
@@ -170,14 +167,42 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	return err
 }
 
+func (my *RollingFileAppender) closeLogFile(level int) error {
+	var files = my.files
+	if level > LevelNone && level < LevelMax && files[level] != nil {
+		var file = files[level]
+		files[level] = nil
+		var err = file.Close()
+		return err
+	}
+
+	return nil
+}
+
 func (my *RollingFileAppender) SetFilterLevel(level int) {
 	if level > LevelNone && level < LevelMax {
 		my.args.FilterLevel = level
+
+		for i := LevelNone + 1; i < level; i++ {
+			var err = my.closeLogFile(i)
+			checkPrintError(err)
+		}
+
+		for i := level; i < LevelMax; i++ {
+			var err = my.openLogFile(i)
+			checkPrintError(err)
+		}
+	}
+}
+
+func checkPrintError(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
 func checkRollingFileAppenderArgs(args *RollingFileAppenderArgs) {
-	if args.FilterLevel <= LevelNone {
+	if args.FilterLevel <= LevelNone || args.FilterLevel >= LevelMax {
 		args.FilterLevel = LevelInfo
 	}
 
