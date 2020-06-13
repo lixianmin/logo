@@ -3,6 +3,7 @@ package logo
 import (
 	"context"
 	"fmt"
+	"github.com/lixianmin/got/loom"
 	"io"
 	"runtime"
 	"strings"
@@ -40,7 +41,7 @@ func NewLogger() *Logger {
 }
 
 func (my *Logger) goLoop(ctx context.Context) {
-	defer DumpIfPanic()
+	defer loom.DumpIfPanic()
 	for {
 		select {
 		case message := <-my.messageChan:
