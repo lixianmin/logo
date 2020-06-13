@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/lixianmin/logo"
 	"path"
+	"strings"
 )
 
 /********************************************************************
@@ -52,7 +53,13 @@ func (my *TalkAppender) Write(message logo.Message) {
 
 	var filePath = message.GetFilePath()
 	var lineNum = message.GetLineNum()
-	var text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(filePath), lineNum, message.GetText(), message.GetStack())
+	var stack = message.GetStack()
+	// dingTalk的换行符，需要特殊处理
+	if len(stack) > 0 {
+		stack = strings.ReplaceAll(stack, "\n", "  \n  ")
+	}
+
+	var text = fmt.Sprintf("[%s:%d] %s %s", path.Base(filePath), lineNum, message.GetText(), stack)
 
 	var talker = args.Talker
 	switch level {
