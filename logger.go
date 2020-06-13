@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/lixianmin/got/loom"
+	"github.com/lixianmin/logo/tools"
 	"io"
-	"runtime"
 	"strings"
 	"sync"
 )
@@ -127,22 +127,8 @@ func (my *Logger) Error(first interface{}, args ...interface{}) {
 }
 
 func (my *Logger) pushMessage(message Message) {
-	if my.funcCallDepth > 0 {
-		var ok bool
-		_, file, line, ok := runtime.Caller(my.funcCallDepth)
-		if !ok {
-			file = "???"
-			line = 0
-		}
-
-		message.filePath = file
-		message.lineNum = line
-	}
-
-	// 检测是否加上trace信息
-	if message.level >= my.stackLevel {
-		message.stack = FetchStackText(6)
-	}
+	var fullStack = message.level >= my.stackLevel
+	message.frames = tools.CallersFrames(my.funcCallDepth, fullStack)
 
 	my.waitFlush.Add(1)
 	my.messageChan <- message

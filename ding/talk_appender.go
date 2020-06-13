@@ -3,8 +3,8 @@ package ding
 import (
 	"fmt"
 	"github.com/lixianmin/logo"
+	"github.com/lixianmin/logo/tools"
 	"path"
-	"strings"
 )
 
 /********************************************************************
@@ -51,15 +51,18 @@ func (my *TalkAppender) Write(message logo.Message) {
 		return
 	}
 
-	var filePath = message.GetFilePath()
-	var lineNum = message.GetLineNum()
-	var stack = message.GetStack()
-	// dingTalk的换行符，需要特殊处理
-	if len(stack) > 0 {
-		stack = strings.ReplaceAll(stack, "\n", "  \n  ")
-	}
+	var text = message.GetText()
+	var frames = message.GetFrames()
+	if len(frames) > 0 {
+		var buffer = make([]byte, 0, 128)
+		for i := 1; i < len(frames); i++ {
+			buffer = append(buffer, "  \n  "...)
+			buffer = tools.AppendFrameInfo(buffer, frames[i])
+		}
 
-	var text = fmt.Sprintf("[%s:%d] %s %s", path.Base(filePath), lineNum, message.GetText(), stack)
+		var first = frames[0]
+		text = fmt.Sprintf("[%s:%d] %s %s", path.Base(first.File), first.Line, text, buffer)
+	}
 
 	var talker = args.Talker
 	switch level {

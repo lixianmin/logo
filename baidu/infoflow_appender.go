@@ -3,6 +3,7 @@ package baidu
 import (
 	"fmt"
 	"github.com/lixianmin/logo"
+	"github.com/lixianmin/logo/tools"
 	"path"
 )
 
@@ -50,9 +51,18 @@ func (my *InfoFlowAppender) Write(message logo.Message) {
 		return
 	}
 
-	var filePath = message.GetFilePath()
-	var lineNum = message.GetLineNum()
-	var text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(filePath), lineNum, message.GetText(), message.GetStack())
+	var text = message.GetText()
+	var frames = message.GetFrames()
+	if len(frames) > 0 {
+		var buffer = make([]byte, 0, 128)
+		for i := 1; i < len(frames); i++ {
+			buffer = append(buffer, '\n')
+			buffer = tools.AppendFrameInfo(buffer, frames[i])
+		}
+
+		var first = frames[0]
+		text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(first.File), first.Line, text, buffer)
+	}
 
 	var talker = args.Talker
 	switch level {
