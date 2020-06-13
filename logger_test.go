@@ -13,7 +13,7 @@ func TestConsoleAppender(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
-	l.SetFuncCallDepth(2)
+	l.SetFuncCallDepth(4)
 
 	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag, FilterLevel: LevelDebug})
 	l.AddAppender(console)
@@ -47,7 +47,7 @@ func TestFileAppenderFilterLevel(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
-	l.SetFuncCallDepth(2)
+	l.SetFuncCallDepth(4)
 
 	var fileAppender = NewRollingFileAppender(RollingFileAppenderArgs{
 		FilterLevel: LevelWarn,
