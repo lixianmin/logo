@@ -52,7 +52,7 @@ func (my *InfoFlowAppender) Write(message logo.Message) {
 
 	var filePath = message.GetFilePath()
 	var lineNum = message.GetLineNum()
-	var text = fmt.Sprintf("[%s:%d] %s", path.Base(filePath), lineNum, message.GetText())
+	var text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(filePath), lineNum, message.GetText(), message.GetTrace())
 
 	var talker = args.Talker
 	switch level {

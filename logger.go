@@ -22,6 +22,7 @@ type Logger struct {
 	appenderList  []Appender
 	funcCallDepth int
 	messageChan   chan Message
+	traceLevel    int
 
 	waitFlush sync.WaitGroup
 	cancel    context.CancelFunc
@@ -34,6 +35,7 @@ func NewLogger() *Logger {
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
 		cancel:        cancel,
+		traceLevel:    LevelError,
 	}
 
 	go logger.goLoop(ctx)
@@ -87,10 +89,18 @@ func (my *Logger) Close() error {
 	return nil
 }
 
+func (my *Logger) SetTraceLevel(level int) {
+	if level > LevelNone && level < LevelMax {
+		my.traceLevel = level
+	}
+}
+
 func (my *Logger) SetFilterLevel(level int) {
-	for _, appender := range my.appenderList {
-		if appender != nil {
-			appender.SetFilterLevel(level)
+	if level > LevelNone && level < LevelMax {
+		for _, appender := range my.appenderList {
+			if appender != nil {
+				appender.SetFilterLevel(level)
+			}
 		}
 	}
 }
@@ -113,10 +123,6 @@ func (my *Logger) Warn(first interface{}, args ...interface{}) {
 
 func (my *Logger) Error(first interface{}, args ...interface{}) {
 	var text = formatLog(first, args...)
-
-	var trace = FetchStackText(5)
-	text = text + trace + "\n\n"
-
 	my.pushMessage(Message{text: text, level: LevelError})
 }
 
@@ -131,6 +137,11 @@ func (my *Logger) pushMessage(message Message) {
 
 		message.filePath = file
 		message.lineNum = line
+	}
+
+	// 检测是否加上trace信息
+	if message.level >= my.traceLevel {
+		message.trace = FetchTraceText(6)
 	}
 
 	my.waitFlush.Add(1)
