@@ -2,6 +2,7 @@ package logo
 
 import (
 	"fmt"
+	"github.com/lixianmin/logo/tools"
 	"os"
 	"path"
 	"time"
@@ -40,7 +41,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	var err = EnsureDir(args.DirName, 0777)
+	var err = tools.EnsureDir(args.DirName, os.ModePerm)
 	checkPrintError(err)
 
 	for level := args.FilterLevel; level < LevelMax; level++ {
@@ -123,7 +124,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 
 	var levelName = levelNames[level]
 	var dirName = path.Join(args.DirName, levelName)
-	err = EnsureDir(dirName, 0777)
+	err = tools.EnsureDir(dirName, 0777)
 
 	var lastPath = fout.Name()
 	my.files[level] = nil
@@ -135,7 +136,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 	for i := 1; true; i++ {
 		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", args.FileNamePrefix, levelName, year, month, day, i)
 		var nextPath = path.Join(args.DirName, levelName, name)
-		if IsPathExist(nextPath) {
+		if tools.IsPathExist(nextPath) {
 			continue
 		}
 

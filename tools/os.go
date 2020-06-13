@@ -1,4 +1,4 @@
-package logo
+package tools
 
 import "os"
 
