@@ -83,7 +83,7 @@ func TestLogAnyObject(t *testing.T) {
 }
 
 func TestAutoFlush(t *testing.T) {
-	var logger = GetDefaultLogger()
+	var logger = GetLogger()
 	logger.AddFlag(LogAsyncWrite)
 	var i = 0
 	for i < 10 {
@@ -107,7 +107,7 @@ func TestAutoFlush(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	var logger = GetDefaultLogger()
+	var logger = GetLogger()
 	logger.AddFlag(LogAsyncWrite)
 
 	for i := 0; i < 50; i++ {
