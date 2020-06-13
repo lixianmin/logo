@@ -49,7 +49,7 @@ func TestDingTalkAppender(t *testing.T) {
 
 	l.AddAppender(talkAppender)
 
-	l.Info("This is info, but will not appear in infoflow.")
-	l.Warn("This warning will appear in infoflow.")
+	l.Info("This is info, but will not appear in dingTalk.")
+	l.Warn("This warning will appear in dingTalk.")
 	l.Error("This is an %q.", "error")
 }
