@@ -28,7 +28,7 @@ func TestRollingFileAppender(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
-	l.SetFuncCallDepth(2)
+	l.SetFuncCallDepth(4)
 
 	var fileAppender = NewRollingFileAppender(RollingFileAppenderArgs{
 		FilterLevel: LevelWarn,

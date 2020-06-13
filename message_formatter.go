@@ -1,7 +1,9 @@
 package logo
 
 import (
+	"github.com/lixianmin/logo/tools"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -34,9 +36,10 @@ func (my *MessageFormatter) format(message Message) []byte {
 
 	var buffer = append(my.buffer, message.text...)
 
-	if message.stack != "" {
-		buffer = append(buffer, message.stack...)
-		buffer = append(buffer, '\n', '\n')
+	var frames = message.GetFrames()
+	for i := 1; i < len(frames); i++ {
+		buffer = append(buffer, '\n')
+		buffer = tools.AppendFrameInfo(buffer, frames[i])
 	}
 
 	if len(buffer) == 0 || buffer[len(buffer)-1] != '\n' {
@@ -56,21 +59,21 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 
 	if flag&FlagDate != 0 {
 		year, month, day := t.Date()
-		itoa(buffer, year, 4)
+		tools.Itoa(buffer, year, 4)
 		*buffer = append(*buffer, '-')
-		itoa(buffer, int(month), 2)
+		tools.Itoa(buffer, int(month), 2)
 		*buffer = append(*buffer, '-')
-		itoa(buffer, day, 2)
+		tools.Itoa(buffer, day, 2)
 		*buffer = append(*buffer, ' ')
 	}
 
 	if flag&FlagTime != 0 {
 		hour, min, sec := t.Clock()
-		itoa(buffer, hour, 2)
+		tools.Itoa(buffer, hour, 2)
 		*buffer = append(*buffer, ':')
-		itoa(buffer, min, 2)
+		tools.Itoa(buffer, min, 2)
 		*buffer = append(*buffer, ':')
-		itoa(buffer, sec, 2)
+		tools.Itoa(buffer, sec, 2)
 		*buffer = append(*buffer, ' ')
 	}
 
@@ -81,32 +84,34 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 		*buffer = append(*buffer, ' ')
 	}
 
-	if flag&(FlagLongFile|FlagShortFile) != 0 {
-		var filePath = message.filePath
+	if flag&(FlagLongFile|FlagShortFile) != 0 && len(message.frames) > 0 {
+		var first = message.frames[0]
+		var filePath = first.File
 		if flag&FlagShortFile != 0 {
 			filePath = path.Base(filePath)
 		}
 
 		*buffer = append(*buffer, filePath...)
 		*buffer = append(*buffer, ':')
-		itoa(buffer, message.lineNum, -1)
+		tools.Itoa(buffer, first.Line, -1)
 		*buffer = append(*buffer, ' ')
+
+		if first.Function != "" {
+			*buffer = append(*buffer, '[')
+			*buffer = append(*buffer, getFunctionName(first.Function)...)
+			*buffer = append(*buffer, '(', ')', ']',' ')
+		}
 	}
 }
 
-// Cheap integer to fixed-width decimal ASCII. Give a negative width to avoid zero-padding.
-func itoa(buf *[]byte, i int, wid int) {
-	// Assemble decimal in reverse order.
-	var b [20]byte
-	bp := len(b) - 1
-	for i >= 10 || wid > 1 {
-		wid--
-		q := i / 10
-		b[bp] = byte('0' + i - q*10)
-		bp--
-		i = q
+func getFunctionName(function string) string {
+	if function != "" {
+		var lastIndex = strings.LastIndexByte(function, '.')
+		if lastIndex > 0 {
+			var s = function[lastIndex+1:]
+			return s
+		}
 	}
-	// i < 10
-	b[bp] = byte('0' + i)
-	*buf = append(*buf, b[bp:]...)
+
+	return function
 }

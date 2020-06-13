@@ -40,7 +40,7 @@ func TestDingTalkAppender(t *testing.T) {
 
 	var l = logo.NewLogger()
 	defer l.Close()
-	l.SetFuncCallDepth(2)
+	l.SetFuncCallDepth(4)
 
 	var talkAppender = NewTalkAppender(TalkAppenderArgs{
 		Talker:      talk,
