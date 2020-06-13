@@ -113,6 +113,10 @@ func (my *Logger) Warn(first interface{}, args ...interface{}) {
 
 func (my *Logger) Error(first interface{}, args ...interface{}) {
 	var text = formatLog(first, args...)
+
+	var trace = FetchStackText(5)
+	text = text + trace + "\n\n"
+
 	my.pushMessage(Message{text: text, level: LevelError})
 }
 
