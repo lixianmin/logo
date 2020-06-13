@@ -34,8 +34,8 @@ func (my *MessageFormatter) format(message Message) []byte {
 
 	var buffer = append(my.buffer, message.text...)
 
-	if message.trace != "" {
-		buffer = append(buffer, message.trace...)
+	if message.stack != "" {
+		buffer = append(buffer, message.stack...)
 		buffer = append(buffer, '\n', '\n')
 	}
 
