@@ -8,5 +8,6 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type Appender interface {
+	SetFilterLevel(level int)
 	Write(message Message)
 }

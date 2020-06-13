@@ -87,6 +87,14 @@ func (my *Logger) Close() error {
 	return nil
 }
 
+func (my *Logger) SetFilterLevel(level int) {
+	for _, appender := range my.appenderList {
+		if appender != nil {
+			appender.SetFilterLevel(level)
+		}
+	}
+}
+
 // 第一个参数有可能是format，也有可能是任意其它类型的对象
 func (my *Logger) Debug(first interface{}, args ...interface{}) {
 	var text = formatLog(first, args...)

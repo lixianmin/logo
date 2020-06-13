@@ -35,7 +35,7 @@ func TestInfoFlowAppender(t *testing.T) {
 
 	var talkAppender = NewInfoFlowAppender(InfoFlowAppenderArgs{
 		Talker:      talk,
-		LevelFilter: logo.LevelWarn,
+		FilterLevel: logo.LevelWarn,
 	})
 
 	l.AddAppender(talkAppender)

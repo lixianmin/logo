@@ -16,7 +16,7 @@ Copyright (C) - All Rights Reserved
 // 这里没有选择使用InfoFlowArgs，是为了给infoflow.go中的InfoFlow类留出未来
 type InfoFlowAppenderArgs struct {
 	Talker      *InfoFlow
-	LevelFilter int
+	FilterLevel int
 }
 
 type InfoFlowAppender struct {
@@ -37,10 +37,16 @@ func (my *InfoFlowAppender) Close() error {
 	return my.args.Talker.Close()
 }
 
+func (my *InfoFlowAppender) SetFilterLevel(level int) {
+	if level > logo.LevelNone && level < logo.LevelMax {
+		my.args.FilterLevel = level
+	}
+}
+
 func (my *InfoFlowAppender) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args
-	if level < args.LevelFilter {
+	if level < args.FilterLevel {
 		return
 	}
 
@@ -66,7 +72,7 @@ func checkInfoFlowAppenderArgs(args *InfoFlowAppenderArgs) {
 		panic("Talker should not be null")
 	}
 
-	if args.LevelFilter <= 0 {
-		args.LevelFilter = logo.LevelInfo
+	if args.FilterLevel <= 0 {
+		args.FilterLevel = logo.LevelInfo
 	}
 }

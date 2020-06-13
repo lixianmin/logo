@@ -13,7 +13,7 @@ Copyright (C) - All Rights Reserved
 
 type ConsoleAppenderArgs struct {
 	Flag        int
-	LevelFilter int
+	FilterLevel int
 }
 
 type ConsoleAppender struct {
@@ -32,10 +32,16 @@ func NewConsoleAppender(args ConsoleAppenderArgs) *ConsoleAppender {
 	return my
 }
 
+func (my *ConsoleAppender) SetFilterLevel(level int) {
+	if level > LevelNone && level < LevelMax {
+		my.args.FilterLevel = level
+	}
+}
+
 func (my *ConsoleAppender) Write(message Message) {
 	var level = message.GetLevel()
 	var args = my.args
-	if level < args.LevelFilter {
+	if level < args.FilterLevel {
 		return
 	}
 
@@ -53,7 +59,7 @@ func (my *ConsoleAppender) writeMessage(fout *os.File, message Message) {
 }
 
 func checkConsoleAppenderArgs(args *ConsoleAppenderArgs) {
-	if args.LevelFilter <= 0 {
-		args.LevelFilter = LevelInfo
+	if args.FilterLevel <= 0 {
+		args.FilterLevel = LevelInfo
 	}
 }
