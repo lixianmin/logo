@@ -32,13 +32,19 @@ func (my *MessageFormatter) format(message Message) []byte {
 	my.buffer = my.buffer[:0]
 	my.formatHeader(message, my.flag)
 
-	var text = message.text
-	my.buffer = append(my.buffer, text...)
-	if len(text) == 0 || text[len(text)-1] != '\n' {
-		my.buffer = append(my.buffer, '\n')
+	var buffer = append(my.buffer, message.text...)
+
+	if message.trace != "" {
+		buffer = append(buffer, message.trace...)
+		buffer = append(buffer, '\n', '\n')
 	}
 
-	return my.buffer
+	if len(buffer) == 0 || buffer[len(buffer)-1] != '\n' {
+		buffer = append(buffer, '\n')
+	}
+
+	my.buffer = buffer
+	return buffer
 }
 
 // formatHeader writes log header to buffer in following order:
