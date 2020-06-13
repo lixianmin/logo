@@ -36,7 +36,7 @@ func (s *stack) StackTrace() errors.StackTrace {
 	return f
 }
 
-func FetchTraceText(skip int) string {
+func FetchStackText(skip int) string {
 	var st = callers(skip)
 	var trace = st.StackTrace()
 	var text = fmt.Sprintf("%+v", trace)

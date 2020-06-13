@@ -12,7 +12,7 @@ type Message struct {
 	filePath string
 	lineNum  int
 	level    int
-	trace    string
+	stack    string
 }
 
 func (message Message) GetText() string {
@@ -31,6 +31,6 @@ func (message Message) GetLevel() int {
 	return message.level
 }
 
-func (message Message) GetTrace() string {
-	return message.trace
+func (message Message) GetStack() string {
+	return message.stack
 }

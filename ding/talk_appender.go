@@ -52,7 +52,7 @@ func (my *TalkAppender) Write(message logo.Message) {
 
 	var filePath = message.GetFilePath()
 	var lineNum = message.GetLineNum()
-	var text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(filePath), lineNum, message.GetText(), message.GetTrace())
+	var text = fmt.Sprintf("[%s:%d] %s\n%s", path.Base(filePath), lineNum, message.GetText(), message.GetStack())
 
 	var talker = args.Talker
 	switch level {
