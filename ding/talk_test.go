@@ -44,7 +44,7 @@ func TestDingTalkAppender(t *testing.T) {
 
 	var talkAppender = NewTalkAppender(TalkAppenderArgs{
 		Talker:      talk,
-		LevelFilter: logo.LevelWarn,
+		FilterLevel: logo.LevelWarn,
 	})
 
 	l.AddAppender(talkAppender)

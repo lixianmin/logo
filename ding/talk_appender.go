@@ -16,7 +16,7 @@ Copyright (C) - All Rights Reserved
 // 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
 type TalkAppenderArgs struct {
 	Talker      *Talk
-	LevelFilter int
+	FilterLevel int
 }
 
 type TalkAppender struct {
@@ -37,10 +37,16 @@ func (my *TalkAppender) Close() error {
 	return my.args.Talker.Close()
 }
 
+func (my *TalkAppender) SetFilterLevel(level int) {
+	if level > logo.LevelNone && level < logo.LevelMax {
+		my.args.FilterLevel = level
+	}
+}
+
 func (my *TalkAppender) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args
-	if level < args.LevelFilter {
+	if level < args.FilterLevel {
 		return
 	}
 
@@ -66,7 +72,7 @@ func checkTalkAppenderArgs(args *TalkAppenderArgs) {
 		panic("Talker should not be null")
 	}
 
-	if args.LevelFilter <= 0 {
-		args.LevelFilter = logo.LevelInfo
+	if args.FilterLevel <= 0 {
+		args.FilterLevel = logo.LevelInfo
 	}
 }
