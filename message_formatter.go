@@ -46,6 +46,11 @@ func (my *MessageFormatter) format(message Message) []byte {
 		buffer = append(buffer, '\n')
 	}
 
+	var withStack = len(frames) > 1
+	if withStack {
+		buffer = append(buffer, '\n')
+	}
+
 	my.buffer = buffer
 	return buffer
 }
@@ -99,7 +104,7 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 		if first.Function != "" {
 			*buffer = append(*buffer, '[')
 			*buffer = append(*buffer, getFunctionName(first.Function)...)
-			*buffer = append(*buffer, '(', ')', ']',' ')
+			*buffer = append(*buffer, '(', ')', ']', ' ')
 		}
 	}
 }
