@@ -69,14 +69,10 @@ func (my *Logger) AddAppender(appender Appender) {
 
 func (my *Logger) Write(p []byte) (n int, err error) {
 	if p != nil {
-		func() {
-			func() {
-				my.pushMessage(Message{
-					text:  *(*string)(unsafe.Pointer(&p)),
-					level: LevelError,
-				})
-			}()
-		}()
+		my.pushMessage(Message{
+			text:  *(*string)(unsafe.Pointer(&p)),
+			level: LevelError,
+		})
 	}
 
 	return len(p), nil
