@@ -71,7 +71,7 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 	if p != nil {
 		my.pushMessage(Message{
 			text:  *(*string)(unsafe.Pointer(&p)),
-			level: LevelError,
+			level: LevelDebug,
 		})
 	}
 
