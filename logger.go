@@ -8,6 +8,7 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"unsafe"
 )
 
 /********************************************************************
@@ -64,6 +65,17 @@ func (my *Logger) AddAppender(appender Appender) {
 	if appender != nil {
 		my.appenderList = append(my.appenderList, appender)
 	}
+}
+
+func (my *Logger) Write(p []byte) (n int, err error) {
+	if p != nil {
+		my.pushMessage(Message{
+			text:  *(*string)(unsafe.Pointer(&p)),
+			level: LevelDebug,
+		})
+	}
+
+	return len(p), nil
 }
 
 func (my *Logger) Flush() {
