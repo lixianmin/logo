@@ -23,6 +23,7 @@ type Logger struct {
 	appenderList  []Appender
 	funcCallDepth int
 	messageChan   chan Message
+	filterLevel   int
 	stackLevel    int
 
 	waitFlush sync.WaitGroup
@@ -36,6 +37,7 @@ func NewLogger() *Logger {
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
 		cancel:        cancel,
+		filterLevel:   LevelInfo,
 		stackLevel:    LevelError,
 	}
 
@@ -55,10 +57,6 @@ func (my *Logger) goLoop(ctx context.Context) {
 	}
 }
 
-func (my *Logger) SetFuncCallDepth(depth int) {
-	my.funcCallDepth = depth
-}
-
 // 这个方法是否需要考虑设计成线程安全？
 // 暂时没有必要：appender列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
 func (my *Logger) AddAppender(appender Appender) {
@@ -71,7 +69,7 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 	if p != nil {
 		my.pushMessage(Message{
 			text:  *(*string)(unsafe.Pointer(&p)),
-			level: LevelDebug,
+			level: my.filterLevel,
 		})
 	}
 
@@ -101,19 +99,25 @@ func (my *Logger) Close() error {
 	return nil
 }
 
-func (my *Logger) SetStackLevel(level int) {
-	if level > LevelNone && level < LevelMax {
-		my.stackLevel = level
-	}
-}
-
 func (my *Logger) SetFilterLevel(level int) {
 	if level > LevelNone && level < LevelMax {
+		my.filterLevel = level
+
 		for _, appender := range my.appenderList {
 			if appender != nil {
 				appender.SetFilterLevel(level)
 			}
 		}
+	}
+}
+
+func (my *Logger) SetFuncCallDepth(depth int) {
+	my.funcCallDepth = depth
+}
+
+func (my *Logger) SetStackLevel(level int) {
+	if level > LevelNone && level < LevelMax {
+		my.stackLevel = level
 	}
 }
 
