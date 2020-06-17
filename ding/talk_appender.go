@@ -5,6 +5,7 @@ import (
 	"github.com/lixianmin/logo"
 	"github.com/lixianmin/logo/tools"
 	"path"
+	"strings"
 )
 
 /********************************************************************
@@ -61,7 +62,7 @@ func (my *TalkAppender) Write(message logo.Message) {
 		}
 
 		var first = frames[0]
-		text = fmt.Sprintf("[%s:%d] %s %s", path.Base(first.File), first.Line, text, buffer)
+		text = fmt.Sprintf("%s:%d [%s()] %s %s", path.Base(first.File), first.Line, getFunctionName(first.Function), text, buffer)
 	}
 
 	var talker = args.Talker
@@ -85,4 +86,16 @@ func checkTalkAppenderArgs(args *TalkAppenderArgs) {
 	if args.FilterLevel <= 0 {
 		args.FilterLevel = logo.LevelInfo
 	}
+}
+
+func getFunctionName(function string) string {
+	if function != "" {
+		var lastIndex = strings.LastIndexByte(function, '.')
+		if lastIndex > 0 {
+			var s = function[lastIndex+1:]
+			return s
+		}
+	}
+
+	return function
 }
