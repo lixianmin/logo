@@ -2,9 +2,11 @@ package logo
 
 import (
 	"fmt"
+	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/logo/tools"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -22,10 +24,12 @@ type RollingFileAppenderArgs struct {
 	FilterLevel    int
 	DirName        string
 	FileNamePrefix string
-	MaxFileSize    int64
+	MaxFileSize    int64         // 当文件达到MaxFileSize后自动分隔成小文件
+	ExpireTime     time.Duration // 文件最后修改时间超过ExpireTime后自动删除
 }
 
 type RollingFileAppender struct {
+	wc        *loom.WaitClose
 	args      RollingFileAppenderArgs
 	formatter *MessageFormatter
 
@@ -37,19 +41,48 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 	checkRollingFileAppenderArgs(&args)
 
 	var my = &RollingFileAppender{
+		wc:        loom.NewWaitClose(),
 		args:      args,
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	var err = tools.EnsureDir(args.DirName, os.ModePerm)
-	checkPrintError(err)
+	_ = os.MkdirAll(args.DirName, 0666)
 
 	for level := args.FilterLevel; level < LevelMax; level++ {
-		err = my.openLogFile(level)
+		var err = my.openLogFile(level)
 		checkPrintError(err)
 	}
 
+	go my.goLoop()
 	return my
+}
+
+func (my *RollingFileAppender) goLoop() {
+	defer loom.DumpIfPanic()
+
+	var args = my.args
+	var ticker = time.NewTicker(24 * time.Hour)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// 遍历并删除过期的文件
+			var removeTime = time.Now().Add(-args.ExpireTime)
+			for level := LevelNone + 1; level < LevelMax; level++ {
+				var levelName = levelNames[level]
+				var dirName = path.Join(args.DirName, levelName)
+				_ = filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
+					if info != nil && !info.IsDir() && info.ModTime().Before(removeTime) {
+						_ = os.Remove(path)
+					}
+					return nil
+				})
+			}
+		case <-my.wc.CloseChan:
+			return
+		}
+	}
 }
 
 func (my *RollingFileAppender) Write(message Message) {
@@ -75,6 +108,7 @@ func (my *RollingFileAppender) Write(message Message) {
 }
 
 func (my *RollingFileAppender) Close() error {
+	_ = my.wc.Close()
 	for level := LevelNone + 1; level < LevelMax; level++ {
 		_ = my.closeLogFile(level)
 	}
@@ -124,7 +158,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 
 	var levelName = levelNames[level]
 	var dirName = path.Join(args.DirName, levelName)
-	err = tools.EnsureDir(dirName, 0777)
+	err = os.MkdirAll(dirName, 0666)
 
 	var lastPath = fout.Name()
 	my.files[level] = nil
@@ -217,5 +251,9 @@ func checkRollingFileAppenderArgs(args *RollingFileAppenderArgs) {
 
 	if args.MaxFileSize <= 0 {
 		args.MaxFileSize = 10 * 1024 * 1024 // 默认大小为10M
+	}
+
+	if args.ExpireTime <= 0 {
+		args.ExpireTime = 7 * 24 * time.Hour // 默认7天后删除
 	}
 }
