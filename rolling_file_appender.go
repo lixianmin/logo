@@ -46,7 +46,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	_ = os.MkdirAll(args.DirName, 0666)
+	_ = os.MkdirAll(args.DirName, filePerm)
 
 	for level := args.FilterLevel; level < LevelMax; level++ {
 		var err = my.openLogFile(level)
@@ -158,7 +158,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 
 	var levelName = levelNames[level]
 	var dirName = path.Join(args.DirName, levelName)
-	err = os.MkdirAll(dirName, 0666)
+	err = os.MkdirAll(dirName, filePerm)
 
 	var lastPath = fout.Name()
 	my.files[level] = nil
@@ -192,12 +192,11 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	}
 
 	const fileFlag = os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	const fileMode = 0666
 
 	var args = my.args
-	var filepath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
+	var fullPath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
 	var err error
-	my.files[level], err = os.OpenFile(filepath, fileFlag, fileMode)
+	my.files[level], err = os.OpenFile(fullPath, fileFlag, filePerm)
 
 	return err
 }
