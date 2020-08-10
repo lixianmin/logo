@@ -46,7 +46,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	_ = os.MkdirAll(args.DirName, filePerm)
+	_ = os.MkdirAll(args.DirName, dirPerm)
 
 	for level := args.FilterLevel; level < LevelMax; level++ {
 		var err = my.openLogFile(level)

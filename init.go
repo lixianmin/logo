@@ -7,8 +7,6 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-const filePerm = 0770
-
 var theLogger = NewLogger()
 
 func init() {
