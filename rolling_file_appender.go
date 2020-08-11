@@ -46,7 +46,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
 
-	_ = os.MkdirAll(args.DirName, dirPerm)
+	_ = os.MkdirAll(args.DirName, os.ModePerm)
 
 	for level := args.FilterLevel; level < LevelMax; level++ {
 		var err = my.openLogFile(level)
@@ -158,7 +158,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 
 	var levelName = levelNames[level]
 	var dirName = path.Join(args.DirName, levelName)
-	err = os.MkdirAll(dirName, filePerm)
+	err = os.MkdirAll(dirName, os.ModePerm)
 
 	var lastPath = fout.Name()
 	my.files[level] = nil
@@ -196,7 +196,7 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	var args = my.args
 	var fullPath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
 	var err error
-	my.files[level], err = os.OpenFile(fullPath, fileFlag, filePerm)
+	my.files[level], err = os.OpenFile(fullPath, fileFlag, 0666)	// 在docker中创建的文件必须让外面的人可以读
 
 	return err
 }
