@@ -24,9 +24,6 @@ const (
 	FlagLongFile  = 0x0004 // i/am/the/path/file.go:12
 	FlagShortFile = 0x0008 // file.go:34
 	FlagLevel     = 0x0010 // [I], [W], [E]
-
-	dirPerm  = 0770
-	filePerm = 0660
 )
 
 var levelHints = []string{"", "[D]", "[I]", "[W]", "[E]"}
