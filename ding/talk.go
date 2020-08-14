@@ -123,11 +123,12 @@ func (talk *Talk) popBatchMessage() (TalkMessage, int) {
 
 func (talk *Talk) Close() error {
 	// 给一点点flush的时间：dingTalk是3s一个令牌，发的很慢的，因此在单元测试里不一定能flush成功
-	const timeout = 1 * time.Second
-	const step = 50 * time.Millisecond
-	for i := 0; talk.sendingCount > 0 && i < int(timeout/step); i++ {
-		time.Sleep(step)
-	}
+	// 本来想给一点点flush的时间，但是进程结束时并不允许这样的等待时间
+	//const timeout = 1 * time.Second
+	//const step = 50 * time.Millisecond
+	//for i := 0; talk.sendingCount > 0 && i < int(timeout/step); i++ {
+	//	time.Sleep(step)
+	//}
 
 	talk.cancel()
 	return nil
