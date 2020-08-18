@@ -79,7 +79,7 @@ func (my *RollingFileAppender) goLoop() {
 					return nil
 				})
 			}
-		case <-my.wc.CloseChan:
+		case <-my.wc.C:
 			return
 		}
 	}
@@ -108,7 +108,7 @@ func (my *RollingFileAppender) Write(message Message) {
 }
 
 func (my *RollingFileAppender) Close() error {
-	_ = my.wc.Close()
+	my.wc.Close()
 	for level := LevelNone + 1; level < LevelMax; level++ {
 		_ = my.closeLogFile(level)
 	}
@@ -196,7 +196,7 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	var args = my.args
 	var fullPath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
 	var err error
-	my.files[level], err = os.OpenFile(fullPath, fileFlag, 0666)	// 在docker中创建的文件必须让外面的人可以读
+	my.files[level], err = os.OpenFile(fullPath, fileFlag, 0666) // 在docker中创建的文件必须让外面的人可以读
 
 	return err
 }
