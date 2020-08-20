@@ -3,7 +3,7 @@ package logo
 import (
 	"fmt"
 	"github.com/lixianmin/got/loom"
-	"github.com/lixianmin/logo/tools"
+	"github.com/lixianmin/got/osx"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,7 +19,7 @@ Copyright (C) - All Rights Reserved
 
 var levelNames = []string{"", "debug", "info", "warn", "error"}
 
-type RollingFileAppenderArgs struct {
+type RollingFileHookArgs struct {
 	Flag           int
 	FilterLevel    int
 	DirName        string
@@ -28,19 +28,19 @@ type RollingFileAppenderArgs struct {
 	ExpireTime     time.Duration // 文件最后修改时间超过ExpireTime后自动删除
 }
 
-type RollingFileAppender struct {
+type RollingFileHook struct {
 	wc        *loom.WaitClose
-	args      RollingFileAppenderArgs
+	args      RollingFileHookArgs
 	formatter *MessageFormatter
 
 	files             [LevelMax]*os.File
 	checkRollingCount int
 }
 
-func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
-	checkRollingFileAppenderArgs(&args)
+func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
+	checkRollingFileHookArgs(&args)
 
-	var my = &RollingFileAppender{
+	var my = &RollingFileHook{
 		wc:        loom.NewWaitClose(),
 		args:      args,
 		formatter: newMessageFormatter(args.Flag, levelHints),
@@ -57,7 +57,7 @@ func NewRollingFileAppender(args RollingFileAppenderArgs) *RollingFileAppender {
 	return my
 }
 
-func (my *RollingFileAppender) goLoop() {
+func (my *RollingFileHook) goLoop() {
 	defer loom.DumpIfPanic()
 
 	var args = my.args
@@ -85,7 +85,7 @@ func (my *RollingFileAppender) goLoop() {
 	}
 }
 
-func (my *RollingFileAppender) Write(message Message) {
+func (my *RollingFileHook) Write(message Message) {
 	var level = message.GetLevel()
 	var filterLevel = my.args.FilterLevel
 	if level < filterLevel {
@@ -107,7 +107,7 @@ func (my *RollingFileAppender) Write(message Message) {
 	}
 }
 
-func (my *RollingFileAppender) Close() error {
+func (my *RollingFileHook) Close() error {
 	my.wc.Close()
 	for level := LevelNone + 1; level < LevelMax; level++ {
 		_ = my.closeLogFile(level)
@@ -116,7 +116,7 @@ func (my *RollingFileAppender) Close() error {
 	return nil
 }
 
-func (my *RollingFileAppender) writeMessage(message Message, level int) {
+func (my *RollingFileHook) writeMessage(message Message, level int) {
 	var fout = my.files[level]
 	if fout == nil {
 		return
@@ -133,7 +133,7 @@ func (my *RollingFileAppender) writeMessage(message Message, level int) {
 	checkPrintError(err)
 }
 
-func (my *RollingFileAppender) checkRollFile(level int) (err error) {
+func (my *RollingFileHook) checkRollFile(level int) (err error) {
 	my.checkRollingCount++
 
 	const checkInterval = 1024
@@ -170,7 +170,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 	for i := 1; true; i++ {
 		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", args.FileNamePrefix, levelName, year, month, day, i)
 		var nextPath = path.Join(args.DirName, levelName, name)
-		if tools.IsPathExist(nextPath) {
+		if osx.IsPathExist(nextPath) {
 			continue
 		}
 
@@ -186,7 +186,7 @@ func (my *RollingFileAppender) checkRollFile(level int) (err error) {
 	return nil
 }
 
-func (my *RollingFileAppender) openLogFile(level int) error {
+func (my *RollingFileHook) openLogFile(level int) error {
 	if my.files[level] != nil {
 		return nil
 	}
@@ -201,7 +201,7 @@ func (my *RollingFileAppender) openLogFile(level int) error {
 	return err
 }
 
-func (my *RollingFileAppender) closeLogFile(level int) error {
+func (my *RollingFileHook) closeLogFile(level int) error {
 	var files = my.files
 	if level > LevelNone && level < LevelMax && files[level] != nil {
 		var file = files[level]
@@ -213,7 +213,7 @@ func (my *RollingFileAppender) closeLogFile(level int) error {
 	return nil
 }
 
-func (my *RollingFileAppender) SetFilterLevel(level int) {
+func (my *RollingFileHook) SetFilterLevel(level int) {
 	if level > LevelNone && level < LevelMax {
 		my.args.FilterLevel = level
 
@@ -235,7 +235,7 @@ func checkPrintError(err error) {
 	}
 }
 
-func checkRollingFileAppenderArgs(args *RollingFileAppenderArgs) {
+func checkRollingFileHookArgs(args *RollingFileHookArgs) {
 	if args.FilterLevel <= LevelNone || args.FilterLevel >= LevelMax {
 		args.FilterLevel = LevelInfo
 	}

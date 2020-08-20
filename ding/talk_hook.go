@@ -1,4 +1,4 @@
-package baidu
+package ding
 
 import (
 	"fmt"
@@ -9,43 +9,43 @@ import (
 )
 
 /********************************************************************
-created:    2020-05-01
+created:    2020-01-30
 author:     lixianmin
 
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-// 这里没有选择使用InfoFlowArgs，是为了给infoflow.go中的InfoFlow类留出未来
-type InfoFlowAppenderArgs struct {
-	Talker      *InfoFlow
+// 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
+type TalkHookArgs struct {
+	Talker      *Talk
 	FilterLevel int
 }
 
-type InfoFlowAppender struct {
-	args InfoFlowAppenderArgs
+type TalkHook struct {
+	args TalkHookArgs
 }
 
-func NewInfoFlowAppender(args InfoFlowAppenderArgs) *InfoFlowAppender {
-	checkInfoFlowAppenderArgs(&args)
+func NewTalkHook(args TalkHookArgs) *TalkHook {
+	checkTalkHookArgs(&args)
 
-	var my = &InfoFlowAppender{
+	var my = &TalkHook{
 		args: args,
 	}
 
 	return my
 }
 
-func (my *InfoFlowAppender) Close() error {
+func (my *TalkHook) Close() error {
 	return my.args.Talker.Close()
 }
 
-func (my *InfoFlowAppender) SetFilterLevel(level int) {
+func (my *TalkHook) SetFilterLevel(level int) {
 	if level > logo.LevelNone && level < logo.LevelMax {
 		my.args.FilterLevel = level
 	}
 }
 
-func (my *InfoFlowAppender) Write(message logo.Message) {
+func (my *TalkHook) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args
 	if level < args.FilterLevel {
@@ -57,7 +57,7 @@ func (my *InfoFlowAppender) Write(message logo.Message) {
 	if len(frames) > 0 {
 		var buffer = make([]byte, 0, 128)
 		for i := 1; i < len(frames); i++ {
-			buffer = append(buffer, '\n')
+			buffer = append(buffer, "  \n  "...)
 			buffer = tools.AppendFrameInfo(buffer, frames[i])
 		}
 
@@ -78,7 +78,7 @@ func (my *InfoFlowAppender) Write(message logo.Message) {
 	}
 }
 
-func checkInfoFlowAppenderArgs(args *InfoFlowAppenderArgs) {
+func checkTalkHookArgs(args *TalkHookArgs) {
 	if args.Talker == nil {
 		panic("Talker should not be null")
 	}

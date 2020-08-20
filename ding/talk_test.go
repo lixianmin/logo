@@ -35,19 +35,19 @@ func TestDingTalk(t *testing.T) {
 	talk.SendError("Error title", "This is an error")
 }
 
-func TestDingTalkAppender(t *testing.T) {
+func TestDingTalkHook(t *testing.T) {
 	var talk = createTalk()
 
 	var l = logo.NewLogger()
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkAppender = NewTalkAppender(TalkAppenderArgs{
+	var talkHook = NewTalkHook(TalkHookArgs{
 		Talker:      talk,
 		FilterLevel: logo.LevelWarn,
 	})
 
-	l.AddAppender(talkAppender)
+	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in dingTalk.")
 	l.Warn("This warning will appear in dingTalk.")

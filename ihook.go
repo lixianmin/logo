@@ -7,7 +7,7 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type Appender interface {
+type IHook interface {
 	SetFilterLevel(level int)
 	Write(message Message)
 }

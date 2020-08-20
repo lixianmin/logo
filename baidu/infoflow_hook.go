@@ -1,4 +1,4 @@
-package ding
+package baidu
 
 import (
 	"fmt"
@@ -9,43 +9,43 @@ import (
 )
 
 /********************************************************************
-created:    2020-01-30
+created:    2020-05-01
 author:     lixianmin
 
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-// 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
-type TalkAppenderArgs struct {
-	Talker      *Talk
+// 这里没有选择使用InfoFlowArgs，是为了给infoflow.go中的InfoFlow类留出未来
+type InfoFlowHookArgs struct {
+	Talker      *InfoFlow
 	FilterLevel int
 }
 
-type TalkAppender struct {
-	args TalkAppenderArgs
+type InfoFlowHook struct {
+	args InfoFlowHookArgs
 }
 
-func NewTalkAppender(args TalkAppenderArgs) *TalkAppender {
-	checkTalkAppenderArgs(&args)
+func NewInfoFlowHook(args InfoFlowHookArgs) *InfoFlowHook {
+	checkInfoFlowHookArgs(&args)
 
-	var my = &TalkAppender{
+	var my = &InfoFlowHook{
 		args: args,
 	}
 
 	return my
 }
 
-func (my *TalkAppender) Close() error {
+func (my *InfoFlowHook) Close() error {
 	return my.args.Talker.Close()
 }
 
-func (my *TalkAppender) SetFilterLevel(level int) {
+func (my *InfoFlowHook) SetFilterLevel(level int) {
 	if level > logo.LevelNone && level < logo.LevelMax {
 		my.args.FilterLevel = level
 	}
 }
 
-func (my *TalkAppender) Write(message logo.Message) {
+func (my *InfoFlowHook) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args
 	if level < args.FilterLevel {
@@ -57,7 +57,7 @@ func (my *TalkAppender) Write(message logo.Message) {
 	if len(frames) > 0 {
 		var buffer = make([]byte, 0, 128)
 		for i := 1; i < len(frames); i++ {
-			buffer = append(buffer, "  \n  "...)
+			buffer = append(buffer, '\n')
 			buffer = tools.AppendFrameInfo(buffer, frames[i])
 		}
 
@@ -78,7 +78,7 @@ func (my *TalkAppender) Write(message logo.Message) {
 	}
 }
 
-func checkTalkAppenderArgs(args *TalkAppenderArgs) {
+func checkInfoFlowHookArgs(args *InfoFlowHookArgs) {
 	if args.Talker == nil {
 		panic("Talker should not be null")
 	}

@@ -26,19 +26,19 @@ func TestInfoFlow(t *testing.T) {
 	talk.SendError("Error title", "This is an error")
 }
 
-func TestInfoFlowAppender(t *testing.T) {
+func TestInfoFlowHook(t *testing.T) {
 	var talk = createTalk()
 
 	var l = logo.NewLogger()
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkAppender = NewInfoFlowAppender(InfoFlowAppenderArgs{
+	var talkHook = NewInfoFlowHook(InfoFlowHookArgs{
 		Talker:      talk,
 		FilterLevel: logo.LevelWarn,
 	})
 
-	l.AddAppender(talkAppender)
+	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in ding talk.")
 	l.Warn("This warning will appear in ding talk.")
