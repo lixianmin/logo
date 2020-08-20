@@ -13,8 +13,8 @@ func init() {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	theLogger.SetFuncCallDepth(5)
 
-	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag})
-	theLogger.AddAppender(console)
+	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag})
+	theLogger.AddHook(console)
 }
 
 func GetLogger() *Logger {

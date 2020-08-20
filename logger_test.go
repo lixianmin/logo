@@ -9,14 +9,14 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-func TestConsoleAppender(t *testing.T) {
+func TestConsoleHook(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var console = NewConsoleAppender(ConsoleAppenderArgs{Flag: flag, FilterLevel: LevelDebug})
-	l.AddAppender(console)
+	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag, FilterLevel: LevelDebug})
+	l.AddHook(console)
 
 	l.Debug("Debug", "Message")
 	l.Info("This is info")
@@ -24,49 +24,49 @@ func TestConsoleAppender(t *testing.T) {
 	l.Error("Error occurred")
 }
 
-func TestRollingFileAppender(t *testing.T) {
+func TestRollingFileHook(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var fileAppender = NewRollingFileAppender(RollingFileAppenderArgs{
+	var fileHook = NewRollingFileHook(RollingFileHookArgs{
 		FilterLevel: LevelWarn,
 		Flag:        flag,
 		MaxFileSize: 16,
 	})
 
-	l.AddAppender(fileAppender)
+	l.AddHook(fileHook)
 
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
 }
 
-func TestFileAppenderFilterLevel(t *testing.T) {
+func TestFileHookFilterLevel(t *testing.T) {
 	var l = NewLogger()
 
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var fileAppender = NewRollingFileAppender(RollingFileAppenderArgs{
+	var fileHook = NewRollingFileHook(RollingFileHookArgs{
 		FilterLevel: LevelWarn,
 		Flag:        flag,
 		MaxFileSize: 16,
 	})
 
-	l.AddAppender(fileAppender)
+	l.AddHook(fileHook)
 
 	l.Info("1 warn level: This is info")
 	l.Warn("2 warn level: I am a warning")
 	l.Error("3 warn level: Error occurred")
 
-	if fileAppender.args.FilterLevel != LevelWarn {
+	if fileHook.args.FilterLevel != LevelWarn {
 		t.Fatal()
 	}
 
-	fileAppender.SetFilterLevel(LevelInfo)
-	if fileAppender.args.FilterLevel != LevelInfo {
+	fileHook.SetFilterLevel(LevelInfo)
+	if fileHook.args.FilterLevel != LevelInfo {
 		t.Fatal()
 	}
 

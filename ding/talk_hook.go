@@ -16,36 +16,36 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 // 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
-type TalkAppenderArgs struct {
+type TalkHookArgs struct {
 	Talker      *Talk
 	FilterLevel int
 }
 
-type TalkAppender struct {
-	args TalkAppenderArgs
+type TalkHook struct {
+	args TalkHookArgs
 }
 
-func NewTalkAppender(args TalkAppenderArgs) *TalkAppender {
-	checkTalkAppenderArgs(&args)
+func NewTalkHook(args TalkHookArgs) *TalkHook {
+	checkTalkHookArgs(&args)
 
-	var my = &TalkAppender{
+	var my = &TalkHook{
 		args: args,
 	}
 
 	return my
 }
 
-func (my *TalkAppender) Close() error {
+func (my *TalkHook) Close() error {
 	return my.args.Talker.Close()
 }
 
-func (my *TalkAppender) SetFilterLevel(level int) {
+func (my *TalkHook) SetFilterLevel(level int) {
 	if level > logo.LevelNone && level < logo.LevelMax {
 		my.args.FilterLevel = level
 	}
 }
 
-func (my *TalkAppender) Write(message logo.Message) {
+func (my *TalkHook) Write(message logo.Message) {
 	var level = message.GetLevel()
 	var args = my.args
 	if level < args.FilterLevel {
@@ -78,7 +78,7 @@ func (my *TalkAppender) Write(message logo.Message) {
 	}
 }
 
-func checkTalkAppenderArgs(args *TalkAppenderArgs) {
+func checkTalkHookArgs(args *TalkHookArgs) {
 	if args.Talker == nil {
 		panic("Talker should not be null")
 	}

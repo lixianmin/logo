@@ -20,7 +20,7 @@ Copyright (C) - All Rights Reserved
 
 type Logger struct {
 	Flag
-	appenderList  []Appender
+	hooks         []IHook
 	funcCallDepth int
 	messageChan   chan Message
 	filterLevel   int
@@ -58,10 +58,10 @@ func (my *Logger) goLoop(ctx context.Context) {
 }
 
 // 这个方法是否需要考虑设计成线程安全？
-// 暂时没有必要：appender列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
-func (my *Logger) AddAppender(appender Appender) {
-	if appender != nil {
-		my.appenderList = append(my.appenderList, appender)
+// 暂时没有必要：hook列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
+func (my *Logger) AddHook(hook IHook) {
+	if hook != nil {
+		my.hooks = append(my.hooks, hook)
 	}
 }
 
@@ -86,9 +86,9 @@ func (my *Logger) Close() error {
 	my.Flush()
 	my.cancel()
 
-	for i, appender := range my.appenderList {
-		my.appenderList[i] = nil
-		if closer, ok := appender.(io.Closer); ok {
+	for i, hook := range my.hooks {
+		my.hooks[i] = nil
+		if closer, ok := hook.(io.Closer); ok {
 			var err = closer.Close()
 			if err != nil {
 				fmt.Println(err)
@@ -103,9 +103,9 @@ func (my *Logger) SetFilterLevel(level int) {
 	if level > LevelNone && level < LevelMax {
 		my.filterLevel = level
 
-		for _, appender := range my.appenderList {
-			if appender != nil {
-				appender.SetFilterLevel(level)
+		for _, hook := range my.hooks {
+			if hook != nil {
+				hook.SetFilterLevel(level)
 			}
 		}
 	}
@@ -156,9 +156,9 @@ func (my *Logger) pushMessage(message Message) {
 }
 
 func (my *Logger) writeMessage(message Message) {
-	for _, appender := range my.appenderList {
-		if appender != nil {
-			appender.Write(message)
+	for _, hook := range my.hooks {
+		if hook != nil {
+			hook.Write(message)
 		}
 	}
 

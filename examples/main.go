@@ -18,12 +18,12 @@ func main() {
 	const flag = logo.FlagDate | logo.FlagTime | logo.FlagShortFile | logo.FlagLevel
 	theLogger.SetFuncCallDepth(5)
 
-	var console = logo.NewConsoleAppender(logo.ConsoleAppenderArgs{Flag: flag})
-	theLogger.AddAppender(console)
+	var console = logo.NewConsoleHook(logo.ConsoleHookArgs{Flag: flag})
+	theLogger.AddHook(console)
 
 	// 文件日志
-	var rollingFile = logo.NewRollingFileAppender(logo.RollingFileAppenderArgs{Flag: flag})
-	theLogger.AddAppender(rollingFile)
+	var rollingFile = logo.NewRollingFileHook(logo.RollingFileHookArgs{Flag: flag})
+	theLogger.AddHook(rollingFile)
 
 	theLogger.Info("this is info")
 	theLogger.Warn("that is warn")
@@ -36,7 +36,7 @@ func main() {
 		case sig := <-signalChan:
 			fmt.Printf("exiting application by signal=%q\n", sig)
 
-			// 程序退出时关闭logger以及所有实现了Closer接口的appenders
+			// 程序退出时关闭logger以及所有实现了Closer接口的hooks
 			println("hello")
 			theLogger.Info("[main()] logger is exiting...")
 			theLogger.Info("[main()] logger is exiting1...")

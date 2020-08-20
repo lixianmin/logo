@@ -32,10 +32,10 @@
 
 1. 不依赖任何第三方代码库
 2. 仅具备简单的输出到console与file的功能
-3. 部分设计参考log4j，可以自定义appender，从而支持输出到其它设备
-4. ConsoleAppender输出到控制台
-5. RollingFileAppender输出到文件，支持自定义输出目录和文件名，支持按文件大小的归档
-6. **赠送**：ding.TalkAppender输出日志到钉钉
+3. 部分设计参考log4j，可以自定义hook，从而支持输出到其它设备
+4. ConsoleHook输出到控制台
+5. RollingFileHook输出到文件，支持自定义输出目录和文件名，支持按文件大小的归档
+6. **赠送**：ding.TalkHook输出日志到钉钉，baidu.InfoflowHook输出日志到百度如流
 
 
 
@@ -45,7 +45,7 @@
 
 ```go
 func main() {
-	// main()方法退出时关闭logger以及所有实现了Closer接口的appenders
+	// main()方法退出时关闭logger以及所有实现了Closer接口的hooks
 	defer logo.GetDefaultLogger().Close()
 
 	// 开启异步写标记，提高日志输出性能
@@ -54,8 +54,8 @@ func main() {
 
 	// 开启文件日志
 	const flag = logo.FlagDate | logo.FlagTime | logo.FlagShortFile | logo.FlagLevel
-	var rollingFile = logo.NewRollingFileAppender(logo.RollingFileAppenderArgs{Flag: flag})
-	logger.AddAppender(rollingFile)
+	var rollingFile = logo.NewRollingFileHook(logo.RollingFileHookArgs{Flag: flag})
+	logger.AddHook(rollingFile)
 
 	// 下面是业务代码
 	logo.Info(1234.5678)
