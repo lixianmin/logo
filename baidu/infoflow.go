@@ -170,6 +170,10 @@ func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 	talk.messages.Unlock()
 }
 
+func (talk *InfoFlow) GetTitlePrefix() string {
+	return talk.titlePrefix
+}
+
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
 	var content = "#### " + title + "\n" + text
 	var message = Markdown{Message: MarkdownMessage{Body: []MarkdownBody{
