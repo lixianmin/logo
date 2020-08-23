@@ -60,7 +60,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 	var bucketChan = make(chan struct{}, maxBucket)
 
 	// 预先准备一个bucket
-	bucketChan<- struct{}{}
+	bucketChan <- struct{}{}
 
 	defer func() {
 		producerTicker.Stop()
@@ -164,6 +164,10 @@ func (talk *Talk) sendMessage(title string, text string, level string) {
 	talk.messages.Lock()
 	talk.messages.buf = append(talk.messages.buf, msg)
 	talk.messages.Unlock()
+}
+
+func (talk *Talk) GetTitlePrefix() string {
+	return talk.titlePrefix
 }
 
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
