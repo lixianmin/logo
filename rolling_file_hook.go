@@ -33,8 +33,10 @@ type RollingFileHook struct {
 	args      RollingFileHookArgs
 	formatter *MessageFormatter
 
-	files             [LevelMax]*os.File
-	checkRollingCount int
+	files [LevelMax] struct {
+		*os.File
+		checkRollingCount int64
+	}
 }
 
 func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
@@ -118,7 +120,7 @@ func (my *RollingFileHook) Close() error {
 
 func (my *RollingFileHook) writeMessage(message Message, level int) {
 	var fout = my.files[level]
-	if fout == nil {
+	if fout.File == nil {
 		return
 	}
 
@@ -134,15 +136,15 @@ func (my *RollingFileHook) writeMessage(message Message, level int) {
 }
 
 func (my *RollingFileHook) checkRollFile(level int) (err error) {
-	my.checkRollingCount++
+	var fout = my.files[level]
+	fout.checkRollingCount++
 
-	const checkInterval = 1024
-	if my.checkRollingCount%checkInterval != 0 {
+	const checkInterval = 2048
+	if fout.checkRollingCount%checkInterval != 0 {
 		return nil
 	}
 
 	// 检测文件大小是否超过maxFileSize
-	var fout = my.files[level]
 	var info os.FileInfo
 	info, err = fout.Stat()
 
@@ -161,7 +163,7 @@ func (my *RollingFileHook) checkRollFile(level int) (err error) {
 	err = os.MkdirAll(dirName, os.ModePerm)
 
 	var lastPath = fout.Name()
-	my.files[level] = nil
+	my.files[level].File = nil
 	err = fout.Close()
 
 	var now = time.Now()
@@ -187,7 +189,7 @@ func (my *RollingFileHook) checkRollFile(level int) (err error) {
 }
 
 func (my *RollingFileHook) openLogFile(level int) error {
-	if my.files[level] != nil {
+	if my.files[level].File != nil {
 		return nil
 	}
 
@@ -196,16 +198,16 @@ func (my *RollingFileHook) openLogFile(level int) error {
 	var args = my.args
 	var fullPath = path.Join(args.DirName, args.FileNamePrefix+levelNames[level]+".log")
 	var err error
-	my.files[level], err = os.OpenFile(fullPath, fileFlag, 0666) // 在docker中创建的文件必须让外面的人可以读
+	my.files[level].File, err = os.OpenFile(fullPath, fileFlag, 0666) // 在docker中创建的文件必须让外面的人可以读
 
 	return err
 }
 
 func (my *RollingFileHook) closeLogFile(level int) error {
 	var files = my.files
-	if level > LevelNone && level < LevelMax && files[level] != nil {
+	if level > LevelNone && level < LevelMax && files[level].File != nil {
 		var file = files[level]
-		files[level] = nil
+		files[level].File = nil
 		var err = file.Close()
 		return err
 	}
