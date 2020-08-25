@@ -136,15 +136,15 @@ func (my *RollingFileHook) writeMessage(message Message, level int) {
 }
 
 func (my *RollingFileHook) checkRollFile(level int) (err error) {
-	var fout = my.files[level]
-	fout.checkRollingCount++
+	my.files[level].checkRollingCount++
 
 	const checkInterval = 2048
-	if fout.checkRollingCount%checkInterval != 0 {
+	if my.files[level].checkRollingCount%checkInterval != 0 {
 		return nil
 	}
 
 	// 检测文件大小是否超过maxFileSize
+	var fout = my.files[level]
 	var info os.FileInfo
 	info, err = fout.Stat()
 
