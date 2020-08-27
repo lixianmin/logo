@@ -246,10 +246,6 @@ func checkRollingFileHookArgs(args *RollingFileHookArgs) {
 		args.DirName = "logs"
 	}
 
-	if args.FileNamePrefix == "" {
-		args.FileNamePrefix = "log_"
-	}
-
 	if args.MaxFileSize <= 0 {
 		args.MaxFileSize = 10 * 1024 * 1024 // 默认大小为10M
 	}
