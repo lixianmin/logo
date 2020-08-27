@@ -55,16 +55,13 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 		checkPrintError(err)
 	}
 
-	go my.goLoop()
+	loom.Go(my.goLoop)
 	return my
 }
 
-func (my *RollingFileHook) goLoop() {
-	defer loom.DumpIfPanic()
-
+func (my *RollingFileHook) goLoop(later *loom.Later) {
 	var args = my.args
-	var ticker = time.NewTicker(24 * time.Hour)
-	defer ticker.Stop()
+	var ticker = later.NewTicker(24 * time.Hour)
 
 	for {
 		select {
