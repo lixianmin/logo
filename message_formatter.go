@@ -62,6 +62,7 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 	var buffer = &my.buffer
 	var t = time.Now()
 
+	var hasTimeFlag = flag&FlagTime != 0
 	if flag&FlagDate != 0 {
 		year, month, day := t.Date()
 		tools.Itoa(buffer, year, 4)
@@ -69,10 +70,17 @@ func (my *MessageFormatter) formatHeader(message Message, flag int) {
 		tools.Itoa(buffer, int(month), 2)
 		*buffer = append(*buffer, '-')
 		tools.Itoa(buffer, day, 2)
-		*buffer = append(*buffer, ' ')
+
+		// 之所以使用'T'而不是空格，原因是为了方便日志搜索
+		var c byte = 'T'
+		if !hasTimeFlag {
+			c = ' '
+		}
+
+		*buffer = append(*buffer, c)
 	}
 
-	if flag&FlagTime != 0 {
+	if hasTimeFlag {
 		hour, min, sec := t.Clock()
 		tools.Itoa(buffer, hour, 2)
 		*buffer = append(*buffer, ':')
