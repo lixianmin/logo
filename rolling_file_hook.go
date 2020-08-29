@@ -22,12 +22,13 @@ var levelNames = []string{"", "debug", "info", "warn", "error"}
 const archiveDirectory = "archive"
 
 type RollingFileHookArgs struct {
-	Flag           int
-	FilterLevel    int
-	DirName        string
-	FileNamePrefix string
-	MaxFileSize    int64         // 当文件达到MaxFileSize后自动分隔成小文件
-	ExpireTime     time.Duration // 文件最后修改时间超过ExpireTime后自动删除
+	Flag                 int
+	FilterLevel          int
+	DirName              string
+	FileNamePrefix       string
+	MaxFileSize          int64         // 当文件达到MaxFileSize后自动分隔成小文件
+	ExpireTime           time.Duration // 文件最后修改时间超过ExpireTime后自动删除
+	CheckRollingInterval int64         // 每间隔多少行检查rolling一个文件
 }
 
 type RollingFileHook struct {
@@ -138,8 +139,7 @@ func (my *RollingFileHook) writeMessage(message Message, level int) {
 func (my *RollingFileHook) checkRollFile(level int) (err error) {
 	my.files[level].checkRollingCount++
 
-	const checkInterval = 2048
-	if my.files[level].checkRollingCount%checkInterval != 0 {
+	if my.files[level].checkRollingCount%my.args.CheckRollingInterval != 0 {
 		return nil
 	}
 
@@ -158,14 +158,14 @@ func (my *RollingFileHook) checkRollFile(level int) (err error) {
 		return nil
 	}
 
-	var levelName = levelNames[level]
-	var dirName = path.Join(args.DirName, levelName)
+	var dirName = path.Join(args.DirName, archiveDirectory)
 	err = os.MkdirAll(dirName, os.ModePerm)
 
 	var lastPath = fout.Name()
 	my.files[level].File = nil
 	err = fout.Close()
 
+	var levelName = levelNames[level]
 	var now = time.Now()
 	year, month, day := now.Date()
 
@@ -254,5 +254,9 @@ func checkRollingFileHookArgs(args *RollingFileHookArgs) {
 
 	if args.ExpireTime <= 0 {
 		args.ExpireTime = 7 * 24 * time.Hour // 默认7天后删除
+	}
+
+	if args.CheckRollingInterval <= 0 {
+		args.CheckRollingInterval = 1024
 	}
 }
