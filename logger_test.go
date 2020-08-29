@@ -31,16 +31,19 @@ func TestRollingFileHook(t *testing.T) {
 	l.SetFuncCallDepth(4)
 
 	var fileHook = NewRollingFileHook(RollingFileHookArgs{
-		FilterLevel: LevelWarn,
-		Flag:        flag,
-		MaxFileSize: 16,
+		FilterLevel:          LevelWarn,
+		Flag:                 flag,
+		MaxFileSize:          16,
+		CheckRollingInterval: 10,
 	})
 
 	l.AddHook(fileHook)
 
-	l.Info("This is info")
-	l.Warn("I am a warning")
-	l.Error("Error occurred")
+	for i := 0; i < 10; i++ {
+		l.Info("This is info")
+		l.Warn("I am a warning")
+		l.Error("Error occurred")
+	}
 }
 
 func TestFileHookFilterLevel(t *testing.T) {
