@@ -19,6 +19,8 @@ Copyright (C) - All Rights Reserved
 
 var levelNames = []string{"", "debug", "info", "warn", "error"}
 
+const archiveDirectory = "archive"
+
 type RollingFileHookArgs struct {
 	Flag           int
 	FilterLevel    int
@@ -60,28 +62,29 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 }
 
 func (my *RollingFileHook) goLoop(later *loom.Later) {
-	var args = my.args
-	var ticker = later.NewTicker(24 * time.Hour)
+	var removeTicker = later.NewTicker(6 * time.Hour)
 
 	for {
 		select {
-		case <-ticker.C:
-			// 遍历并删除过期的文件
-			var removeTime = time.Now().Add(-args.ExpireTime)
-			for level := LevelNone + 1; level < LevelMax; level++ {
-				var levelName = levelNames[level]
-				var dirName = path.Join(args.DirName, levelName)
-				_ = filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
-					if info != nil && !info.IsDir() && info.ModTime().Before(removeTime) {
-						_ = os.Remove(path)
-					}
-					return nil
-				})
-			}
+		case <-removeTicker.C:
+			my.checkRemoveExpiredLogFiles()
 		case <-my.wc.C:
 			return
 		}
 	}
+}
+
+func (my *RollingFileHook) checkRemoveExpiredLogFiles() {
+	// 遍历并删除过期的文件
+	var args = my.args
+	var removeTime = time.Now().Add(-args.ExpireTime)
+	var dirName = path.Join(args.DirName, archiveDirectory)
+	_ = filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
+		if info != nil && !info.IsDir() && info.ModTime().Before(removeTime) {
+			_ = os.Remove(path)
+		}
+		return nil
+	})
 }
 
 func (my *RollingFileHook) Write(message Message) {
@@ -168,7 +171,9 @@ func (my *RollingFileHook) checkRollFile(level int) (err error) {
 
 	for i := 1; true; i++ {
 		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", args.FileNamePrefix, levelName, year, month, day, i)
-		var nextPath = path.Join(args.DirName, levelName, name)
+		// 原来的归档是按levelName分类的，但是这样的话，当前使用中的debug.log, info.log, warn.log, error.log将会被分散到多处，
+		// 因此，现在统一归集到archive目录下
+		var nextPath = path.Join(args.DirName, archiveDirectory, name)
 		if osx.IsPathExist(nextPath) {
 			continue
 		}
