@@ -32,7 +32,7 @@ type RollingFileHookArgs struct {
 }
 
 type RollingFileHook struct {
-	wc        *loom.WaitClose
+	wc        loom.WaitClose
 	args      RollingFileHookArgs
 	formatter *MessageFormatter
 
@@ -46,7 +46,6 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 	checkRollingFileHookArgs(&args)
 
 	var my = &RollingFileHook{
-		wc:        loom.NewWaitClose(),
 		args:      args,
 		formatter: newMessageFormatter(args.Flag, levelHints),
 	}
@@ -69,7 +68,7 @@ func (my *RollingFileHook) goLoop(later *loom.Later) {
 		select {
 		case <-removeTicker.C:
 			my.checkRemoveExpiredLogFiles()
-		case <-my.wc.C:
+		case <-my.wc.C():
 			return
 		}
 	}
@@ -111,10 +110,11 @@ func (my *RollingFileHook) Write(message Message) {
 }
 
 func (my *RollingFileHook) Close() error {
-	my.wc.Close()
-	for level := LevelNone + 1; level < LevelMax; level++ {
-		_ = my.closeLogFile(level)
-	}
+	my.wc.Close(func() {
+		for level := LevelNone + 1; level < LevelMax; level++ {
+			_ = my.closeLogFile(level)
+		}
+	})
 
 	return nil
 }
