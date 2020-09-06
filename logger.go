@@ -7,7 +7,6 @@ import (
 	"github.com/lixianmin/logo/tools"
 	"io"
 	"strings"
-	"sync"
 	"unsafe"
 )
 
@@ -26,7 +25,7 @@ type Logger struct {
 	filterLevel   int
 	stackLevel    int
 
-	waitFlush sync.WaitGroup
+	//waitFlush sync.WaitGroup
 	cancel    context.CancelFunc
 }
 
@@ -77,7 +76,7 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 }
 
 func (my *Logger) Flush() {
-	my.waitFlush.Wait()
+	//my.waitFlush.Wait()
 }
 
 func (my *Logger) Close() error {
@@ -146,7 +145,9 @@ func (my *Logger) pushMessage(message Message) {
 	var fullStack = message.level >= my.stackLevel
 	message.frames = tools.CallersFrames(my.funcCallDepth, fullStack)
 
-	my.waitFlush.Add(1)
+	// 原来的使用waitGroup来同步Flush()的方案是错误的，会报如下错误
+	// sync: WaitGroup is reused before previous Wait has returned
+	//my.waitFlush.Add(1)
 	my.messageChan <- message
 
 	// 如果未开启异步写模式
@@ -162,7 +163,7 @@ func (my *Logger) writeMessage(message Message) {
 		}
 	}
 
-	my.waitFlush.Add(-1)
+	//my.waitFlush.Add(-1)
 }
 
 func formatLog(first interface{}, args ...interface{}) string {
