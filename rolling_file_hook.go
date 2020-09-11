@@ -110,14 +110,13 @@ func (my *RollingFileHook) Write(message Message) {
 }
 
 func (my *RollingFileHook) Close() error {
-	_ = my.wc.Close(func() error {
+	return my.wc.Close(func() error {
 		for level := LevelNone + 1; level < LevelMax; level++ {
 			_ = my.closeLogFile(level)
 		}
+
 		return nil
 	})
-
-	return nil
 }
 
 func (my *RollingFileHook) writeMessage(message Message, level int) {
