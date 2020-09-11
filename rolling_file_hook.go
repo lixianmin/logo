@@ -61,7 +61,7 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 	return my
 }
 
-func (my *RollingFileHook) goLoop(later *loom.Later) {
+func (my *RollingFileHook) goLoop(later loom.Later) {
 	var removeTicker = later.NewTicker(6 * time.Hour)
 
 	for {
@@ -110,10 +110,11 @@ func (my *RollingFileHook) Write(message Message) {
 }
 
 func (my *RollingFileHook) Close() error {
-	my.wc.Close(func() {
+	_ = my.wc.Close(func() error {
 		for level := LevelNone + 1; level < LevelMax; level++ {
 			_ = my.closeLogFile(level)
 		}
+		return nil
 	})
 
 	return nil
