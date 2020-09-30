@@ -63,12 +63,13 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 
 func (my *RollingFileHook) goLoop(later loom.Later) {
 	var removeTicker = later.NewTicker(6 * time.Hour)
+	var closeChan = my.wc.C()
 
 	for {
 		select {
 		case <-removeTicker.C:
 			my.checkRemoveExpiredLogFiles()
-		case <-my.wc.C():
+		case <-closeChan:
 			return
 		}
 	}
