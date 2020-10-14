@@ -95,18 +95,19 @@ func (my *RollingFileHook) Write(message Message) {
 		return
 	}
 
+	var buffer = my.formatter.format(message)
 	switch level {
 	case LevelError:
-		my.writeMessage(message, LevelError)
+		my.writeMessage(buffer, LevelError)
 		fallthrough
 	case LevelWarn:
-		my.writeMessage(message, LevelWarn)
+		my.writeMessage(buffer, LevelWarn)
 		fallthrough
 	case LevelInfo:
-		my.writeMessage(message, LevelInfo)
+		my.writeMessage(buffer, LevelInfo)
 		fallthrough
 	case LevelDebug:
-		my.writeMessage(message, LevelDebug)
+		my.writeMessage(buffer, LevelDebug)
 	}
 }
 
@@ -120,13 +121,12 @@ func (my *RollingFileHook) Close() error {
 	})
 }
 
-func (my *RollingFileHook) writeMessage(message Message, level int) {
+func (my *RollingFileHook) writeMessage(buffer []byte, level int) {
 	var fout = my.files[level]
 	if fout.File == nil {
 		return
 	}
 
-	var buffer = my.formatter.format(message)
 	_, err := fout.Write(buffer)
 	if err != nil {
 		fmt.Println(err)

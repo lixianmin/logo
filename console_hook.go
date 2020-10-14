@@ -45,17 +45,13 @@ func (my *ConsoleHook) Write(message Message) {
 		return
 	}
 
+	var buffer = my.formatter.format(message)
 	switch level {
 	case LevelDebug, LevelInfo:
-		my.writeMessage(os.Stdout, message)
+		_, _ = os.Stdout.Write(buffer)
 	case LevelWarn, LevelError:
-		my.writeMessage(os.Stderr, message)
+		_, _ = os.Stderr.Write(buffer)
 	}
-}
-
-func (my *ConsoleHook) writeMessage(fout *os.File, message Message) {
-	var buffer = my.formatter.format(message)
-	_, _ = fout.Write(buffer)
 }
 
 func checkConsoleHookArgs(args *ConsoleHookArgs) {
