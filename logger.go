@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/lixianmin/got/loom"
+	"github.com/lixianmin/got/std"
 	"github.com/lixianmin/logo/tools"
 	"io"
 	"strings"
@@ -59,7 +60,7 @@ func (my *Logger) goLoop(ctx context.Context) {
 // 这个方法是否需要考虑设计成线程安全？
 // 暂时没有必要：hook列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
 func (my *Logger) AddHook(hook IHook) {
-	if hook != nil {
+	if !std.IsNil(hook) {
 		my.hooks = append(my.hooks, hook)
 	}
 }
