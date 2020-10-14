@@ -20,7 +20,7 @@ type MessageFormatter struct {
 	buffer     []byte // for accumulating text to write
 }
 
-func newMessageFormatter(flag int, levelHints []string) *MessageFormatter {
+func NewMessageFormatter(flag int, levelHints []string) *MessageFormatter {
 	var formatter = &MessageFormatter{
 		flag:       flag,
 		levelHints: levelHints,
@@ -30,7 +30,7 @@ func newMessageFormatter(flag int, levelHints []string) *MessageFormatter {
 	return formatter
 }
 
-func (my *MessageFormatter) format(message Message) []byte {
+func (my *MessageFormatter) Format(message Message) []byte {
 	my.buffer = my.buffer[:0]
 	my.formatHeader(message, my.flag)
 

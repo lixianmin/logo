@@ -47,7 +47,7 @@ func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
 
 	var my = &RollingFileHook{
 		args:      args,
-		formatter: newMessageFormatter(args.Flag, levelHints),
+		formatter: NewMessageFormatter(args.Flag, levelHints),
 	}
 
 	_ = os.MkdirAll(args.DirName, os.ModePerm)
@@ -95,7 +95,7 @@ func (my *RollingFileHook) Write(message Message) {
 		return
 	}
 
-	var buffer = my.formatter.format(message)
+	var buffer = my.formatter.Format(message)
 	switch level {
 	case LevelError:
 		my.writeMessage(buffer, LevelError)

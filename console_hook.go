@@ -26,7 +26,7 @@ func NewConsoleHook(args ConsoleHookArgs) *ConsoleHook {
 
 	var my = &ConsoleHook{
 		args:      args,
-		formatter: newMessageFormatter(args.Flag, levelHintsConsole),
+		formatter: NewMessageFormatter(args.Flag, levelHintsConsole),
 	}
 
 	return my
@@ -45,7 +45,7 @@ func (my *ConsoleHook) Write(message Message) {
 		return
 	}
 
-	var buffer = my.formatter.format(message)
+	var buffer = my.formatter.Format(message)
 	switch level {
 	case LevelDebug, LevelInfo:
 		_, _ = os.Stdout.Write(buffer)
