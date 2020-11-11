@@ -171,7 +171,8 @@ func (my *RollingFileHook) checkRollFile(level int) (err error) {
 	year, month, day := now.Date()
 
 	for i := 1; true; i++ {
-		var name = fmt.Sprintf("%s%s-%d-%d-%d_%d.log", args.FileNamePrefix, levelName, year, month, day, i)
+		// 格式化的时候，年-月-日分别占4:2:2个位置，不足的用0补上
+		var name = fmt.Sprintf("%s%s-%4d-%02d-%02d_%02d.log", args.FileNamePrefix, levelName, year, month, day, i)
 		// 原来的归档是按levelName分类的，但是这样的话，当前使用中的debug.log, info.log, warn.log, error.log将会被分散到多处，
 		// 因此，现在统一归集到archive目录下
 		var nextPath = path.Join(args.DirName, archiveDirectory, name)

@@ -26,7 +26,9 @@ func main() {
 	theLogger.AddHook(rollingFile)
 
 	theLogger.Info("this is info")
-	theLogger.Warn("that is warn")
+	year, month, day := time.Now().Date()
+	var name = fmt.Sprintf("warn of : %4d-%02d-%02d", year, month, day)
+	theLogger.Warn(name)
 
 	var signalChan = make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGTERM)
