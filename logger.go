@@ -5,7 +5,6 @@ import (
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/std"
 	"github.com/lixianmin/logo/tools"
-	"io"
 	"strings"
 	"sync/atomic"
 	"unsafe"
@@ -46,13 +45,9 @@ func NewLogger() *Logger {
 
 func (my *Logger) goLoop(later loom.Later) {
 	var closeChan = my.wc.C()
-	var fetus = &loggerFetus{
-		hooks: make([]IHook, 0, 4),
-	}
+	var fetus = newLoggerFetus()
 
-	defer func() {
-		my.closeHooks(fetus)
-	}()
+	defer fetus.Close()
 
 	for {
 		select {
@@ -67,35 +62,14 @@ func (my *Logger) goLoop(later loom.Later) {
 	}
 }
 
-// 这个方法是否需要考虑设计成线程安全？
-// 暂时没有必要：hook列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
 func (my *Logger) AddHook(hook IHook) {
 	if !std.IsNil(hook) {
 		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
 			var fetus = args.(*loggerFetus)
-			fetus.hooks = append(fetus.hooks, hook)
+			fetus.AddHook(hook)
 			return nil, nil
 		}).Get1()
 	}
-}
-
-func (my *Logger) closeHooks(fetus *loggerFetus) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(r)
-		}
-	}()
-
-	for _, hook := range fetus.hooks {
-		if closer, ok := hook.(io.Closer); ok {
-			var err = closer.Close()
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-
-	fetus.hooks = nil
 }
 
 func (my *Logger) Write(p []byte) (n int, err error) {
@@ -130,12 +104,7 @@ func (my *Logger) SetFilterLevel(level int) {
 
 		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
 			var fetus = args.(*loggerFetus)
-			for _, hook := range fetus.hooks {
-				if hook != nil {
-					hook.SetFilterLevel(level)
-				}
-			}
-
+			fetus.SetFilterLevel(level)
 			return nil, nil
 		})
 	}
