@@ -22,6 +22,8 @@ func TestConsoleHook(t *testing.T) {
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
+
+	l.Close()
 }
 
 func TestRollingFileHook(t *testing.T) {

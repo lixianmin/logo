@@ -7,6 +7,7 @@ import (
 	"github.com/lixianmin/logo/tools"
 	"io"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"unsafe"
 )
@@ -25,8 +26,9 @@ type Logger struct {
 	filterLevel   int32
 	stackLevel    int32
 
-	wc    loom.WaitClose
-	tasks *loom.TaskQueue
+	wc        loom.WaitClose
+	tasks     *loom.TaskQueue
+	waitClose sync.WaitGroup
 }
 
 type loggerFetus struct {
@@ -43,6 +45,7 @@ func NewLogger() *Logger {
 	}
 
 	my.tasks = loom.NewTaskQueue(loom.WithCloseChan(my.wc.C()))
+	my.waitClose.Add(1)
 	loom.Go(my.goLoop)
 
 	return my
@@ -55,15 +58,8 @@ func (my *Logger) goLoop(later loom.Later) {
 	}
 
 	defer func() {
-		for i, hook := range fetus.hooks {
-			fetus.hooks[i] = nil
-			if closer, ok := hook.(io.Closer); ok {
-				var err = closer.Close()
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
-		}
+		my.closeHooks(fetus)
+		my.waitClose.Done()
 	}()
 
 	for {
@@ -73,7 +69,9 @@ func (my *Logger) goLoop(later loom.Later) {
 		case task := <-my.tasks.C:
 			_ = task.Do(fetus)
 		case <-closeChan:
-			return
+			if len(my.messageChan) == 0 {
+				return
+			}
 		}
 	}
 }
@@ -87,6 +85,24 @@ func (my *Logger) AddHook(hook IHook) {
 			fetus.hooks = append(fetus.hooks, hook)
 			return nil, nil
 		}).Get1()
+	}
+}
+
+func (my *Logger) closeHooks(fetus *loggerFetus) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(r)
+		}
+	}()
+
+	for i, hook := range fetus.hooks {
+		fetus.hooks[i] = nil
+		if closer, ok := hook.(io.Closer); ok {
+			var err = closer.Close()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
 }
 
@@ -109,7 +125,10 @@ func (my *Logger) Close() error {
 	// Flush()需要放到wc.Close()的前面。
 	// 否则如果先调用wc.Close()的话，一旦goLoop()的协程先于Flush()退出，则Flush()方法可能死锁
 	my.Flush()
-	return my.wc.Close(nil)
+	_ = my.wc.Close(nil)
+	my.waitClose.Wait()
+
+	return nil
 }
 
 func (my *Logger) SetFilterLevel(level int) {
@@ -161,6 +180,10 @@ func (my *Logger) Error(first interface{}, args ...interface{}) {
 }
 
 func (my *Logger) pushMessage(message Message) {
+	if my.wc.IsClosed() {
+		return
+	}
+
 	var fullStack = message.level >= int(atomic.LoadInt32(&my.stackLevel))
 	var depth = int(atomic.LoadInt32(&my.funcCallDepth))
 	message.frames = tools.CallersFrames(depth, fullStack)
