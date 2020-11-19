@@ -86,8 +86,7 @@ func (my *Logger) closeHooks(fetus *loggerFetus) {
 		}
 	}()
 
-	for i, hook := range fetus.hooks {
-		fetus.hooks[i] = nil
+	for _, hook := range fetus.hooks {
 		if closer, ok := hook.(io.Closer); ok {
 			var err = closer.Close()
 			if err != nil {
@@ -95,6 +94,8 @@ func (my *Logger) closeHooks(fetus *loggerFetus) {
 			}
 		}
 	}
+
+	fetus.hooks = nil
 }
 
 func (my *Logger) Write(p []byte) (n int, err error) {
