@@ -1,13 +1,13 @@
 package logo
 
 import (
-	"context"
 	"fmt"
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/std"
 	"github.com/lixianmin/logo/tools"
 	"io"
 	"strings"
+	"sync/atomic"
 	"unsafe"
 )
 
@@ -20,38 +20,59 @@ Copyright (C) - All Rights Reserved
 
 type Logger struct {
 	Flag
-	hooks         []IHook
-	funcCallDepth int
+	funcCallDepth int32
 	messageChan   chan Message
-	filterLevel   int
-	stackLevel    int
+	filterLevel   int32
+	stackLevel    int32
 
-	//waitFlush sync.WaitGroup
-	cancel    context.CancelFunc
+	wc    loom.WaitClose
+	tasks *loom.TaskQueue
+}
+
+type loggerFetus struct {
+	hooks []IHook
 }
 
 func NewLogger() *Logger {
 	const chanLen = 128
-	var ctx, cancel = context.WithCancel(context.Background())
-	var logger = &Logger{
+	var my = &Logger{
 		funcCallDepth: -1,
 		messageChan:   make(chan Message, chanLen),
-		cancel:        cancel,
 		filterLevel:   LevelInfo,
 		stackLevel:    LevelError,
 	}
 
-	go logger.goLoop(ctx)
-	return logger
+	my.tasks = loom.NewTaskQueue(loom.WithCloseChan(my.wc.C()))
+	loom.Go(my.goLoop)
+
+	return my
 }
 
-func (my *Logger) goLoop(ctx context.Context) {
-	defer loom.DumpIfPanic()
+func (my *Logger) goLoop(later loom.Later) {
+	var closeChan = my.wc.C()
+	var fetus = &loggerFetus{
+		hooks: make([]IHook, 0, 4),
+	}
+
+	defer func() {
+		for i, hook := range fetus.hooks {
+			fetus.hooks[i] = nil
+			if closer, ok := hook.(io.Closer); ok {
+				var err = closer.Close()
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
+	}()
+
 	for {
 		select {
 		case message := <-my.messageChan:
-			my.writeMessage(message)
-		case <-ctx.Done():
+			my.writeMessage(fetus, message)
+		case task := <-my.tasks.C:
+			_ = task.Do(fetus)
+		case <-closeChan:
 			return
 		}
 	}
@@ -61,7 +82,11 @@ func (my *Logger) goLoop(ctx context.Context) {
 // 暂时没有必要：hook列表基本上是在工程启动最前期初始化完成，目前没遇到运行中需要改动的情况
 func (my *Logger) AddHook(hook IHook) {
 	if !std.IsNil(hook) {
-		my.hooks = append(my.hooks, hook)
+		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+			var fetus = args.(*loggerFetus)
+			fetus.hooks = append(fetus.hooks, hook)
+			return nil, nil
+		}).Get1()
 	}
 }
 
@@ -69,7 +94,7 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 	if p != nil {
 		my.pushMessage(Message{
 			text:  *(*string)(unsafe.Pointer(&p)),
-			level: my.filterLevel,
+			level: int(atomic.LoadInt32(&my.filterLevel)),
 		})
 	}
 
@@ -84,40 +109,33 @@ func (my *Logger) Close() error {
 	// Flush()需要放到wc.Close()的前面。
 	// 否则如果先调用wc.Close()的话，一旦goLoop()的协程先于Flush()退出，则Flush()方法可能死锁
 	my.Flush()
-	my.cancel()
-
-	for i, hook := range my.hooks {
-		my.hooks[i] = nil
-		if closer, ok := hook.(io.Closer); ok {
-			var err = closer.Close()
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-
-	return nil
+	return my.wc.Close(nil)
 }
 
 func (my *Logger) SetFilterLevel(level int) {
 	if level > LevelNone && level < LevelMax {
-		my.filterLevel = level
+		atomic.StoreInt32(&my.filterLevel, int32(level))
 
-		for _, hook := range my.hooks {
-			if hook != nil {
-				hook.SetFilterLevel(level)
+		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+			var fetus = args.(*loggerFetus)
+			for _, hook := range fetus.hooks {
+				if hook != nil {
+					hook.SetFilterLevel(level)
+				}
 			}
-		}
+
+			return nil, nil
+		})
 	}
 }
 
-func (my *Logger) SetFuncCallDepth(depth int) {
-	my.funcCallDepth = depth
+func (my *Logger) SetFuncCallDepth(depth int32) {
+	atomic.StoreInt32(&my.funcCallDepth, depth)
 }
 
-func (my *Logger) SetStackLevel(level int) {
+func (my *Logger) SetStackLevel(level int32) {
 	if level > LevelNone && level < LevelMax {
-		my.stackLevel = level
+		atomic.StoreInt32(&my.stackLevel, level)
 	}
 }
 
@@ -143,8 +161,9 @@ func (my *Logger) Error(first interface{}, args ...interface{}) {
 }
 
 func (my *Logger) pushMessage(message Message) {
-	var fullStack = message.level >= my.stackLevel
-	message.frames = tools.CallersFrames(my.funcCallDepth, fullStack)
+	var fullStack = message.level >= int(atomic.LoadInt32(&my.stackLevel))
+	var depth = int(atomic.LoadInt32(&my.funcCallDepth))
+	message.frames = tools.CallersFrames(depth, fullStack)
 
 	// 原来的使用waitGroup来同步Flush()的方案是错误的，会报如下错误
 	// sync: WaitGroup is reused before previous Wait has returned
@@ -157,8 +176,8 @@ func (my *Logger) pushMessage(message Message) {
 	}
 }
 
-func (my *Logger) writeMessage(message Message) {
-	for _, hook := range my.hooks {
+func (my *Logger) writeMessage(fetus *loggerFetus, message Message) {
+	for _, hook := range fetus.hooks {
 		if hook != nil {
 			hook.Write(message)
 		}
