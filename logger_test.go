@@ -46,6 +46,8 @@ func TestRollingFileHook(t *testing.T) {
 		l.Warn("I am a warning")
 		l.Error("Error occurred")
 	}
+
+	l.Close()
 }
 
 func TestFileHookFilterLevel(t *testing.T) {

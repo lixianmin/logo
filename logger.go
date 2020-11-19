@@ -7,7 +7,6 @@ import (
 	"github.com/lixianmin/logo/tools"
 	"io"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"unsafe"
 )
@@ -26,13 +25,8 @@ type Logger struct {
 	filterLevel   int32
 	stackLevel    int32
 
-	wc        loom.WaitClose
-	tasks     *loom.TaskQueue
-	waitClose sync.WaitGroup
-}
-
-type loggerFetus struct {
-	hooks []IHook
+	wc    loom.WaitClose
+	tasks *loom.TaskQueue
 }
 
 func NewLogger() *Logger {
@@ -45,7 +39,6 @@ func NewLogger() *Logger {
 	}
 
 	my.tasks = loom.NewTaskQueue(loom.WithCloseChan(my.wc.C()))
-	my.waitClose.Add(1)
 	loom.Go(my.goLoop)
 
 	return my
@@ -59,19 +52,17 @@ func (my *Logger) goLoop(later loom.Later) {
 
 	defer func() {
 		my.closeHooks(fetus)
-		my.waitClose.Done()
 	}()
 
 	for {
 		select {
 		case message := <-my.messageChan:
-			my.writeMessage(fetus, message)
+			fetus.WriteMessage(message)
 		case task := <-my.tasks.C:
 			_ = task.Do(fetus)
 		case <-closeChan:
-			if len(my.messageChan) == 0 {
-				return
-			}
+			fetus.FlushMessage(my.messageChan)
+			return
 		}
 	}
 }
@@ -118,15 +109,16 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 }
 
 func (my *Logger) Flush() {
-	//my.waitFlush.Wait()
+	my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+		var fetus = args.(*loggerFetus)
+		fetus.FlushMessage(my.messageChan)
+		return nil, nil
+	}).Get1()
 }
 
 func (my *Logger) Close() error {
-	// Flush()需要放到wc.Close()的前面。
-	// 否则如果先调用wc.Close()的话，一旦goLoop()的协程先于Flush()退出，则Flush()方法可能死锁
 	my.Flush()
 	_ = my.wc.Close(nil)
-	my.waitClose.Wait()
 
 	return nil
 }
@@ -197,16 +189,6 @@ func (my *Logger) pushMessage(message Message) {
 	if !my.HasFlag(LogAsyncWrite) {
 		my.Flush()
 	}
-}
-
-func (my *Logger) writeMessage(fetus *loggerFetus, message Message) {
-	for _, hook := range fetus.hooks {
-		if hook != nil {
-			hook.Write(message)
-		}
-	}
-
-	//my.waitFlush.Add(-1)
 }
 
 func formatLog(first interface{}, args ...interface{}) string {
