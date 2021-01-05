@@ -7,17 +7,26 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-var theLogger = NewLogger()
+var theLogger ILogger
 
 func init() {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
-	theLogger.SetFuncCallDepth(5)
+	var log = NewLogger()
+	log.SetFuncCallDepth(5)
 
 	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag})
-	theLogger.AddHook(console)
+	log.AddHook(console)
+
+	theLogger = log
 }
 
-func GetLogger() *Logger {
+func SetLogger(log ILogger) {
+	if log != nil {
+		theLogger = log
+	}
+}
+
+func GetLogger() ILogger {
 	return theLogger
 }
 
