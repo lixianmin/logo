@@ -3,6 +3,7 @@ package logo
 import (
 	"github.com/lixianmin/got/convert"
 	"strconv"
+	"sync"
 )
 
 /********************************************************************
@@ -13,6 +14,11 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 var theLogger ILogger
+var bufferPool = &sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 256)
+	},
+}
 
 func init() {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
@@ -51,16 +57,27 @@ func Error(first interface{}, args ...interface{}) {
 	theLogger.Error(first, args...)
 }
 
-// Info() for json
-func I(args ...interface{}) {
+func JsonD(args ...interface{}) {
+	theLogger.Debug(formatJson(args...))
+}
+
+func JsonI(args ...interface{}) {
 	theLogger.Info(formatJson(args...))
+}
+
+func JsonW(args ...interface{}) {
+	theLogger.Warn(formatJson(args...))
+}
+
+func JsonE(args ...interface{}) {
+	theLogger.Error(formatJson(args...))
 }
 
 func formatJson(args ...interface{}) string {
 	var count = len(args)
 	var halfCount = count >> 1
 
-	var results = make([]byte, 128)
+	var results = bufferPool.Get().([]byte)
 	results = append(results, '{')
 	for i := 0; i < halfCount; i++ {
 		var index = i << 1
@@ -78,5 +95,7 @@ func formatJson(args ...interface{}) string {
 
 	results = append(results, '}')
 	var text = string(results)
+	bufferPool.Put(results[:0])
+
 	return text
 }
