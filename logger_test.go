@@ -126,6 +126,6 @@ func TestClose(t *testing.T) {
 	logger.Info("closed")
 }
 
-func TestI(t *testing.T) {
-	I("age", 10, "name", "lixianmin", "male", true, "height", 1.78)
+func TestJsonI(t *testing.T) {
+	JsonI("age", 10, "name", "lixianmin", "male", true, "height", 1.78)
 }
