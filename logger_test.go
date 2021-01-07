@@ -90,7 +90,7 @@ func TestLogAnyObject(t *testing.T) {
 }
 
 func TestAutoFlush(t *testing.T) {
-	var logger = GetLogger()
+	var logger = GetLogger().(*Logger)
 	logger.AddFlag(LogAsyncWrite)
 	var i = 0
 	for i < 10 {
@@ -114,7 +114,7 @@ func TestAutoFlush(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	var logger = GetLogger()
+	var logger = GetLogger().(*Logger)
 	logger.AddFlag(LogAsyncWrite)
 
 	for i := 0; i < 50; i++ {
@@ -124,4 +124,8 @@ func TestClose(t *testing.T) {
 	_ = logger.Close()
 
 	logger.Info("closed")
+}
+
+func TestI(t *testing.T) {
+	I("age", 10, "name", "lixianmin", "male", true, "height", 1.78)
 }
