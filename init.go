@@ -1,7 +1,7 @@
 package logo
 
 import (
-	"github.com/lixianmin/got/convert"
+	"github.com/lixianmin/logo/tools"
 	"strconv"
 	"sync"
 )
@@ -86,7 +86,7 @@ func formatJson(args ...interface{}) string {
 
 		results = strconv.AppendQuote(results, key)
 		results = append(results, ':')
-		results = convert.AppendArg(results, value)
+		results = tools.AppendArg(results, value)
 
 		if i+1 < halfCount {
 			results = append(results, ',')
