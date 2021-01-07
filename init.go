@@ -1,5 +1,10 @@
 package logo
 
+import (
+	"github.com/lixianmin/got/convert"
+	"strconv"
+)
+
 /********************************************************************
 created:    2020-01-30
 author:     lixianmin
@@ -44,4 +49,34 @@ func Warn(first interface{}, args ...interface{}) {
 
 func Error(first interface{}, args ...interface{}) {
 	theLogger.Error(first, args...)
+}
+
+// Info() for json
+func I(args ...interface{}) {
+	theLogger.Info(formatJson(args...))
+}
+
+func formatJson(args ...interface{}) string {
+	var count = len(args)
+	var halfCount = count >> 1
+
+	var results = make([]byte, 128)
+	results = append(results, '{')
+	for i := 0; i < halfCount; i++ {
+		var index = i << 1
+		var key, _ = args[index].(string)
+		var value = args[index+1]
+
+		results = strconv.AppendQuote(results, key)
+		results = append(results, ':')
+		results = convert.AppendArg(results, value)
+
+		if i+1 < halfCount {
+			results = append(results, ',')
+		}
+	}
+
+	results = append(results, '}')
+	var text = string(results)
+	return text
 }
