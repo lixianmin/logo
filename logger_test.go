@@ -1,6 +1,10 @@
 package logo
 
-import "testing"
+import (
+	"math"
+	"testing"
+	"time"
+)
 
 /********************************************************************
 created:    2020-01-30
@@ -126,6 +130,43 @@ func TestClose(t *testing.T) {
 	logger.Info("closed")
 }
 
-func TestJsonI(t *testing.T) {
-	JsonI("age", 10, "name", "lixianmin", "male", true, "height", 1.78)
+func TestJson(t *testing.T) {
+	type Pig struct {
+		Weight  int32     `json:"weight"`
+		Birth   time.Time `json:"birth"`
+		Name    string    `json:"name"`
+		Message *Message  `json:"message"`
+	}
+
+	var pig = Pig{
+		Weight: 135,
+		Birth:  time.Now(),
+		Name:   "panda",
+	}
+
+	theLogger.(*Logger).SetFilterLevel(LevelDebug)
+
+	JsonD("int", math.MinInt64)
+	JsonD("int8", int8(math.MinInt8))
+	JsonD("int16", int16(math.MinInt16))
+	JsonD("int32", int32(math.MinInt32))
+	JsonD("int64", int64(math.MinInt64))
+
+	JsonI("uint8", uint8(math.MaxUint8))
+	JsonI("uint16", uint16(math.MaxUint16))
+	JsonI("uint32", uint32(math.MaxUint32))
+	JsonI("uint64", uint64(math.MaxUint64))
+
+	JsonW("nil", nil)
+	JsonW("bool", true, "bool", false)
+	JsonW("float32", float32(1.234), "float64", 10.29)
+	JsonW("string", "lixianmin\"' \t\r\n 你好啊小朋友")
+	JsonW("bytes", []byte("this is a byte buffer"))
+
+	JsonE("age", 10, "pig", pig)
+	JsonE("slice", []Pig{pig, pig})
+	JsonE("map", map[int]string{1: "hello", 2: "world"})
+
+	JsonI(1, "test")
+	JsonI(2, "奇数个参数", "third")
 }
