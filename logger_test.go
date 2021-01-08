@@ -164,6 +164,7 @@ func TestJson(t *testing.T) {
 	JsonW("float32", float32(1.234), "float64", 10.29)
 	JsonW("string", "lixianmin\"' \t\r\n 你好啊小朋友")
 	JsonW("bytes", []byte("this is a byte buffer"))
+	JsonW("time", time.Now())
 
 	JsonE("age", 10, "pig", pig)
 	JsonE("slice", []Pig{pig, pig})
