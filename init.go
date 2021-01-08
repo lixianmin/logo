@@ -16,7 +16,7 @@ Copyright (C) - All Rights Reserved
 var theLogger ILogger
 var bufferPool = &sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 256)
+		return make([]byte, 0, 256)
 	},
 }
 
