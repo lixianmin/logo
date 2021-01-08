@@ -76,7 +76,6 @@ func JsonE(args ...interface{}) {
 func formatJson(args ...interface{}) string {
 	var count = len(args)
 	var halfCount = count >> 1
-
 	var results = bufferPool.Get().([]byte)
 	results = append(results, '{')
 	for i := 0; i < halfCount; i++ {
@@ -86,12 +85,18 @@ func formatJson(args ...interface{}) string {
 
 		results = strconv.AppendQuote(results, key)
 		results = append(results, ':')
-		results = tools.AppendArg(results, value)
+		results = tools.AppendJson(results, value)
 
 		if i+1 < halfCount {
 			results = append(results, ',')
 		}
 	}
+
+	//if count&1 == 1 {
+	//	var key, _ = args[count-1].(string)
+	//	results = strconv.AppendQuote(results, key)
+	//	results = append(results, "null"...)
+	//}
 
 	results = append(results, '}')
 	var text = string(results)

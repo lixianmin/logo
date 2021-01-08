@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"fmt"
 	"github.com/lixianmin/got/convert"
 	"strconv"
 	"time"
@@ -15,15 +14,14 @@ author:     lixianmin
 this file is derived from go-redis/v8/internal/util.go
 *********************************************************************/
 
-
-func AppendArg(b []byte, v interface{}) []byte {
+func AppendJson(b []byte, v interface{}) []byte {
 	switch v := v.(type) {
 	case nil:
-		return append(b, "<nil>"...)
+		return append(b, "null"...)
 	case string:
-		return appendUTF8String(b, v)
+		return strconv.AppendQuote(b, v)
 	case []byte:
-		return appendUTF8String(b, convert.String(v))
+		return strconv.AppendQuote(b, convert.String(v))
 	case int:
 		return strconv.AppendInt(b, int64(v), 10)
 	case int8:
@@ -49,14 +47,11 @@ func AppendArg(b []byte, v interface{}) []byte {
 	case float64:
 		return strconv.AppendFloat(b, v, 'f', -1, 64)
 	case bool:
-		if v {
-			return append(b, "true"...)
-		}
-		return append(b, "false"...)
+		return strconv.AppendBool(b, v)
 	case time.Time:
 		return v.AppendFormat(b, time.RFC3339Nano)
 	default:
-		return append(b, fmt.Sprint(v)...)
+		return append(b, convert.ToJson(v)...)
 	}
 }
 
