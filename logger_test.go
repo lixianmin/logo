@@ -1,7 +1,9 @@
 package logo
 
 import (
+	"github.com/lixianmin/got/randx"
 	"math"
+	"sync"
 	"testing"
 	"time"
 )
@@ -169,4 +171,20 @@ func TestJson(t *testing.T) {
 
 	JsonI(1, "test")
 	JsonI(2, "奇数个参数", "third")
+}
+
+func TestJsonConcurrent(t *testing.T) {
+	var count = 100
+	var wg sync.WaitGroup
+	wg.Add(count)
+
+	for i := 0; i < count; i++ {
+		go func(i int) {
+			JsonI("key", i)
+			time.Sleep(randx.Duration(100*time.Millisecond, 500*time.Millisecond))
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
 }

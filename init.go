@@ -74,33 +74,35 @@ func JsonE(args ...interface{}) {
 }
 
 func formatJson(args ...interface{}) string {
-	var count = len(args)
-	var halfCount = count >> 1
 	var results = bufferPool.Get().([]byte)
 	results = append(results, '{')
-	for i := 0; i < halfCount; i++ {
-		var index = i << 1
-		var key, _ = args[index].(string)
-		var value = args[index+1]
+	{
+		var count = len(args)
+		var halfCount = (count + 1) >> 1
+		for i := 0; i < halfCount; i++ {
+			var index = i << 1
+			var key, _ = args[index].(string)
 
-		results = strconv.AppendQuote(results, key)
-		results = append(results, ':')
-		results = tools.AppendJson(results, value)
+			// 如果只有奇数个参数，则输出默认值null
+			index++
+			var value interface{} = nil
+			if index < count {
+				value = args[index]
+			}
 
-		if i+1 < halfCount {
-			results = append(results, ',')
+			results = strconv.AppendQuote(results, key)
+			results = append(results, ':')
+			results = tools.AppendJson(results, value)
+
+			if i+1 < halfCount {
+				results = append(results, ',')
+			}
 		}
 	}
-
-	//if count&1 == 1 {
-	//	var key, _ = args[count-1].(string)
-	//	results = strconv.AppendQuote(results, key)
-	//	results = append(results, "null"...)
-	//}
-
 	results = append(results, '}')
+
+	// 这里results马上就要还回去了，不要使用unsafe的[]byte转string了
 	var text = string(results)
 	bufferPool.Put(results[:0])
-
 	return text
 }
