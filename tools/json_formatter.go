@@ -48,7 +48,10 @@ func AppendJson(b []byte, v interface{}) []byte {
 	case bool:
 		return strconv.AppendBool(b, v)
 	case time.Time:
-		return v.AppendFormat(b, time.RFC3339Nano)
+		b = append(b, '"')
+		b = v.AppendFormat(b, time.RFC3339Nano)
+		b = append(b, '"')
+		return b
 	default:
 		return append(b, convert.ToJson(v)...)
 	}
