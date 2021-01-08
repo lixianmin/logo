@@ -4,7 +4,6 @@ import (
 	"github.com/lixianmin/got/convert"
 	"strconv"
 	"time"
-	"unicode/utf8"
 )
 
 /********************************************************************
@@ -55,29 +54,29 @@ func AppendJson(b []byte, v interface{}) []byte {
 	}
 }
 
-func appendUTF8String(b []byte, s string) []byte {
-	for _, r := range s {
-		b = appendRune(b, r)
-	}
-	return b
-}
-
-func appendRune(b []byte, r rune) []byte {
-	if r < utf8.RuneSelf {
-		switch c := byte(r); c {
-		case '\n':
-			return append(b, "\\n"...)
-		case '\r':
-			return append(b, "\\r"...)
-		default:
-			return append(b, c)
-		}
-	}
-
-	l := len(b)
-	b = append(b, make([]byte, utf8.UTFMax)...)
-	n := utf8.EncodeRune(b[l:l+utf8.UTFMax], r)
-	b = b[:l+n]
-
-	return b
-}
+//func appendUTF8String(b []byte, s string) []byte {
+//	for _, r := range s {
+//		b = appendRune(b, r)
+//	}
+//	return b
+//}
+//
+//func appendRune(b []byte, r rune) []byte {
+//	if r < utf8.RuneSelf {
+//		switch c := byte(r); c {
+//		case '\n':
+//			return append(b, "\\n"...)
+//		case '\r':
+//			return append(b, "\\r"...)
+//		default:
+//			return append(b, c)
+//		}
+//	}
+//
+//	l := len(b)
+//	b = append(b, make([]byte, utf8.UTFMax)...)
+//	n := utf8.EncodeRune(b[l:l+utf8.UTFMax], r)
+//	b = b[:l+n]
+//
+//	return b
+//}
