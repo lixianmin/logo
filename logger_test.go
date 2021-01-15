@@ -1,6 +1,7 @@
 package logo
 
 import (
+	"fmt"
 	"github.com/lixianmin/got/randx"
 	"math"
 	"sync"
@@ -165,6 +166,7 @@ func TestJson(t *testing.T) {
 	JsonW("string", "lixianmin\"' \t\r\n 你好啊小朋友")
 	JsonW("bytes", []byte("this is a byte buffer"))
 	JsonW("time", time.Now())
+	JsonW("error", fmt.Errorf("this is an error: %d", 1029))
 
 	JsonE("age", 10, "pig", pig)
 	JsonE("slice", []Pig{pig, pig})
