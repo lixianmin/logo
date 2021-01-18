@@ -28,11 +28,20 @@ type Logger struct {
 	tasks *loom.TaskQueue
 }
 
-func NewLogger() *Logger {
-	const chanLen = 128
+func NewLogger(opts ...LoggerOption) *Logger {
+	// 默认值
+	var options = loggerOptions{
+		BufferSize: 4096,
+	}
+
+	// 初始化
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	var my = &Logger{
 		funcCallDepth: -1,
-		messageChan:   make(chan Message, chanLen),
+		messageChan:   make(chan Message, options.BufferSize),
 		filterLevel:   LevelInfo,
 		stackLevel:    LevelError,
 	}
@@ -92,10 +101,10 @@ func (my *Logger) Flush() {
 }
 
 func (my *Logger) Close() error {
-	my.Flush()
-	_ = my.wc.Close(nil)
-
-	return nil
+	return my.wc.Close(func() error {
+		my.Flush()
+		return nil
+	})
 }
 
 func (my *Logger) SetFilterLevel(level int) {
@@ -153,7 +162,10 @@ func (my *Logger) pushMessage(message Message) {
 	// 原来的使用waitGroup来同步Flush()的方案是错误的，会报如下错误
 	// sync: WaitGroup is reused before previous Wait has returned
 	//my.waitFlush.Add(1)
-	my.messageChan <- message
+	select {
+	case my.messageChan <- message:
+	case <-my.wc.C():
+	}
 
 	// 如果未开启异步写模式
 	if !my.HasFlag(LogAsyncWrite) {
@@ -182,5 +194,6 @@ func formatLog(first interface{}, args ...interface{}) string {
 		}
 		msg += strings.Repeat(" %v", len(args))
 	}
+
 	return fmt.Sprintf(msg, args...)
 }
