@@ -21,26 +21,8 @@ func AppendJson(b []byte, v interface{}) []byte {
 		return strconv.AppendQuote(b, v)
 	case []byte:
 		return strconv.AppendQuote(b, convert.String(v))
-	case int:
-		return strconv.AppendInt(b, int64(v), 10)
-	case int8:
-		return strconv.AppendInt(b, int64(v), 10)
-	case int16:
-		return strconv.AppendInt(b, int64(v), 10)
-	case int32:
-		return strconv.AppendInt(b, int64(v), 10)
-	case int64:
-		return strconv.AppendInt(b, v, 10)
-	case uint:
-		return strconv.AppendUint(b, uint64(v), 10)
-	case uint8:
-		return strconv.AppendUint(b, uint64(v), 10)
-	case uint16:
-		return strconv.AppendUint(b, uint64(v), 10)
-	case uint32:
-		return strconv.AppendUint(b, uint64(v), 10)
-	case uint64:
-		return strconv.AppendUint(b, v, 10)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return convert.AppendInt(b, v, 10)
 	case float32:
 		return strconv.AppendFloat(b, float64(v), 'f', -1, 64)
 	case float64:
