@@ -1,4 +1,4 @@
-package ding
+package baidu
 
 import "sync"
 
@@ -51,3 +51,4 @@ func (my *MessageQueue) Size() int {
 
 	return size
 }
+

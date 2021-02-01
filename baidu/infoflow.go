@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -27,11 +26,7 @@ type InfoFlow struct {
 	token        string
 	cancel       context.CancelFunc
 	sendingCount int32
-
-	messages struct {
-		sync.Mutex
-		buf []InfoFlowMessage
-	}
+	messageQueue MessageQueue
 }
 
 func NewInfoFlow(titlePrefix string, token string) *InfoFlow {
@@ -75,7 +70,7 @@ func (talk *InfoFlow) goLoop(ctx context.Context) {
 	}()
 
 	// 格式化并直接发送消息
-	var sendDirect = func(msg InfoFlowMessage, batch int) {
+	var sendDirect = func(msg Message, batch int) {
 		atomic.AddInt32(&talk.sendingCount, int32(-batch))
 		const layout = "2006-01-02 15:04:05"
 		var text = msg.Text + "\n" + msg.Timestamp.Format(layout)
@@ -91,39 +86,16 @@ func (talk *InfoFlow) goLoop(ctx context.Context) {
 				bucketChan <- struct{}{}
 			}
 		case <-checkTicker.C:
-			for len(bucketChan) > 0 && len(talk.messages.buf) > 0 {
+			for len(bucketChan) > 0 && talk.messageQueue.Size() > 0 {
 				<-bucketChan
 
-				var msg, batch = talk.popBatchMessage()
+				var msg, batch = talk.messageQueue.PopBatchMessage()
 				sendDirect(msg, batch)
 			}
 		case <-ctx.Done():
 			return
 		}
 	}
-}
-
-func (talk *InfoFlow) popBatchMessage() (InfoFlowMessage, int) {
-	talk.messages.Lock()
-	var first = talk.messages.buf[0]
-	var batch = 1
-	for i := 1; i < len(talk.messages.buf); i++ {
-		var msg = talk.messages.buf[i]
-		if msg.Text != first.Text || msg.Level != first.Level && msg.Title != first.Title {
-			break
-		}
-
-		batch++
-	}
-
-	var newSize = len(talk.messages.buf) - batch
-	for i := 0; i < newSize; i++ {
-		talk.messages.buf[i] = talk.messages.buf[i+batch]
-	}
-
-	talk.messages.buf = talk.messages.buf[:newSize]
-	talk.messages.Unlock()
-	return first, batch
 }
 
 func (talk *InfoFlow) Close() error {
@@ -157,7 +129,7 @@ func (talk *InfoFlow) SendError(title string, text string) {
 func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
-	var msg = InfoFlowMessage{
+	var msg = Message{
 		Level:     level,
 		Title:     title,
 		Text:      text,
@@ -165,9 +137,7 @@ func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 		Token:     talk.token,
 	}
 
-	talk.messages.Lock()
-	talk.messages.buf = append(talk.messages.buf, msg)
-	talk.messages.Unlock()
+	talk.messageQueue.Push(msg)
 }
 
 func (talk *InfoFlow) GetTitlePrefix() string {
@@ -177,7 +147,7 @@ func (talk *InfoFlow) GetTitlePrefix() string {
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
 	var content = "#### " + title + "\n" + text
 	var message = Markdown{Message: MarkdownMessage{Body: []MarkdownBody{
-		{Type: "MD", Content: content},}}}
+		{Type: "MD", Content: content}}}}
 
 	var data, err = json.Marshal(message)
 	if err != nil {
