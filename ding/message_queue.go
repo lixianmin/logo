@@ -1,8 +1,6 @@
 package ding
 
-import (
-	"github.com/lixianmin/got/loom"
-)
+import "sync"
 
 /********************************************************************
 created:    2020-02-01
@@ -12,7 +10,7 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type MessageQueue struct {
-	mutex loom.Mutex
+	mutex sync.Mutex
 	buf   []Message
 }
 
