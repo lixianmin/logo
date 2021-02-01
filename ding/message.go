@@ -9,7 +9,7 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type TalkMessage struct {
+type Message struct {
 	Level     string
 	Title     string
 	Text      string

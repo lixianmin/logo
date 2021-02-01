@@ -64,7 +64,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 	}()
 
 	// 格式化并直接发送消息
-	var sendDirect = func(msg TalkMessage, batch int) {
+	var sendDirect = func(msg Message, batch int) {
 		atomic.AddInt32(&talk.sendingCount, int32(-batch))
 		const layout = "2006-01-02 15:04:05"
 		var text = msg.Text + "  \n  " + msg.Timestamp.Format(layout)
@@ -125,7 +125,7 @@ func (talk *Talk) SendError(title string, text string) {
 func (talk *Talk) sendMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
-	var msg = TalkMessage{
+	var msg = Message{
 		Level:     level,
 		Title:     title,
 		Text:      text,

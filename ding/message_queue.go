@@ -13,16 +13,16 @@ Copyright (C) - All Rights Reserved
 
 type MessageQueue struct {
 	mutex loom.Mutex
-	buf   []TalkMessage
+	buf   []Message
 }
 
-func (my *MessageQueue) Push(msg TalkMessage) {
+func (my *MessageQueue) Push(msg Message) {
 	my.mutex.Lock()
 	my.buf = append(my.buf, msg)
 	my.mutex.Unlock()
 }
 
-func (my *MessageQueue) PopBatchMessage() (TalkMessage, int) {
+func (my *MessageQueue) PopBatchMessage() (Message, int) {
 	my.mutex.Lock()
 	var buf = my.buf
 	var first = buf[0]
