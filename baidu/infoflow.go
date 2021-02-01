@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/lixianmin/logo/ding"
 	"io/ioutil"
 	"net/http"
 	"sync/atomic"
@@ -26,7 +27,7 @@ type InfoFlow struct {
 	token        string
 	cancel       context.CancelFunc
 	sendingCount int32
-	messageQueue MessageQueue
+	messageQueue ding.MessageQueue
 }
 
 func NewInfoFlow(titlePrefix string, token string) *InfoFlow {
@@ -70,7 +71,7 @@ func (talk *InfoFlow) goLoop(ctx context.Context) {
 	}()
 
 	// 格式化并直接发送消息
-	var sendDirect = func(msg Message, batch int) {
+	var sendDirect = func(msg ding.Message, batch int) {
 		atomic.AddInt32(&talk.sendingCount, int32(-batch))
 		const layout = "2006-01-02 15:04:05"
 		var text = msg.Text + "\n" + msg.Timestamp.Format(layout)
@@ -129,7 +130,7 @@ func (talk *InfoFlow) SendError(title string, text string) {
 func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
-	var msg = Message{
+	var msg = ding.Message{
 		Level:     level,
 		Title:     title,
 		Text:      text,

@@ -15,40 +15,47 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-// 这里没有选择使用InfoFlowArgs，是为了给infoflow.go中的InfoFlow类留出未来
-type InfoFlowHookArgs struct {
-	Talker      *InfoFlow
-	FilterLevel int
-}
-
 type InfoFlowHook struct {
-	args InfoFlowHookArgs
+	talker      *InfoFlow
+	filterLevel int
 }
 
-func NewInfoFlowHook(args InfoFlowHookArgs) *InfoFlowHook {
-	checkInfoFlowHookArgs(&args)
+func NewInfoFlowHook(talker *InfoFlow, opts ...InfoFlowHookOption) *InfoFlowHook {
+	if talker == nil {
+		panic("Talker should not be null")
+	}
+
+	// 默认值
+	var options = infoFlowHookOptions{
+		FilterLevel: logo.LevelInfo,
+	}
+
+	// 初始化
+	for _, opt := range opts {
+		opt(&options)
+	}
 
 	var my = &InfoFlowHook{
-		args: args,
+		talker:      talker,
+		filterLevel: options.FilterLevel,
 	}
 
 	return my
 }
 
 func (my *InfoFlowHook) Close() error {
-	return my.args.Talker.Close()
+	return my.talker.Close()
 }
 
 func (my *InfoFlowHook) SetFilterLevel(level int) {
 	if level > logo.LevelNone && level < logo.LevelMax {
-		my.args.FilterLevel = level
+		my.filterLevel = level
 	}
 }
 
 func (my *InfoFlowHook) Write(message logo.Message) {
 	var level = message.GetLevel()
-	var args = my.args
-	if level < args.FilterLevel {
+	if level < my.filterLevel {
 		return
 	}
 
@@ -65,7 +72,7 @@ func (my *InfoFlowHook) Write(message logo.Message) {
 		text = fmt.Sprintf("%s:%d [%s()] %s %s", path.Base(first.File), first.Line, getFunctionName(first.Function), text, buffer)
 	}
 
-	var talker = args.Talker
+	var talker = my.talker
 	switch level {
 	case logo.LevelDebug:
 		talker.SendDebug("", text)
@@ -75,16 +82,6 @@ func (my *InfoFlowHook) Write(message logo.Message) {
 		talker.SendWarn("", text)
 	case logo.LevelError:
 		talker.SendError("", text)
-	}
-}
-
-func checkInfoFlowHookArgs(args *InfoFlowHookArgs) {
-	if args.Talker == nil {
-		panic("Talker should not be null")
-	}
-
-	if args.FilterLevel <= 0 {
-		args.FilterLevel = logo.LevelInfo
 	}
 }
 

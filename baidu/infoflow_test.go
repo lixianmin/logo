@@ -33,10 +33,7 @@ func TestInfoFlowHook(t *testing.T) {
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkHook = NewInfoFlowHook(InfoFlowHookArgs{
-		Talker:      talk,
-		FilterLevel: logo.LevelWarn,
-	})
+	var talkHook = NewInfoFlowHook(talk, WithFilterLevel(logo.LevelWarn))
 
 	l.AddHook(talkHook)
 
