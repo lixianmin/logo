@@ -15,40 +15,47 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-// 这里没有选择使用TalkArgs，是为了给talk.go中的Talk类留出未来
-type TalkHookArgs struct {
-	Talker      *Talk
-	FilterLevel int
-}
-
 type TalkHook struct {
-	args TalkHookArgs
+	talker      *Talk
+	filterLevel int
 }
 
-func NewTalkHook(args TalkHookArgs) *TalkHook {
-	checkTalkHookArgs(&args)
+func NewTalkHook(talker *Talk, opts ...TalkHookOption) *TalkHook {
+	if talker == nil {
+		panic("Talker should not be null")
+	}
+
+	// 默认值
+	var options = talkHookOptions{
+		FilterLevel: logo.LevelInfo,
+	}
+
+	// 初始化
+	for _, opt := range opts {
+		opt(&options)
+	}
 
 	var my = &TalkHook{
-		args: args,
+		talker:      talker,
+		filterLevel: options.FilterLevel,
 	}
 
 	return my
 }
 
 func (my *TalkHook) Close() error {
-	return my.args.Talker.Close()
+	return my.talker.Close()
 }
 
 func (my *TalkHook) SetFilterLevel(level int) {
 	if level > logo.LevelNone && level < logo.LevelMax {
-		my.args.FilterLevel = level
+		my.filterLevel = level
 	}
 }
 
 func (my *TalkHook) Write(message logo.Message) {
 	var level = message.GetLevel()
-	var args = my.args
-	if level < args.FilterLevel {
+	if level < my.filterLevel {
 		return
 	}
 
@@ -65,7 +72,7 @@ func (my *TalkHook) Write(message logo.Message) {
 		text = fmt.Sprintf("%s:%d [%s()] %s %s", path.Base(first.File), first.Line, getFunctionName(first.Function), text, buffer)
 	}
 
-	var talker = args.Talker
+	var talker = my.talker
 	switch level {
 	case logo.LevelDebug:
 		talker.SendDebug("", text)
@@ -75,16 +82,6 @@ func (my *TalkHook) Write(message logo.Message) {
 		talker.SendWarn("", text)
 	case logo.LevelError:
 		talker.SendError("", text)
-	}
-}
-
-func checkTalkHookArgs(args *TalkHookArgs) {
-	if args.Talker == nil {
-		panic("Talker should not be null")
-	}
-
-	if args.FilterLevel <= 0 {
-		args.FilterLevel = logo.LevelInfo
 	}
 }
 
