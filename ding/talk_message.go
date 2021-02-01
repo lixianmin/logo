@@ -16,13 +16,3 @@ type TalkMessage struct {
 	Timestamp time.Time
 	Token     string
 }
-
-type MarkdownParams struct {
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
-
-type MarkdownMessage struct {
-	MsgType  string         `json:"msgtype"`
-	Markdown MarkdownParams `json:"markdown"`
-}

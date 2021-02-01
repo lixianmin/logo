@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -24,11 +23,7 @@ type Talk struct {
 	token        string
 	cancel       context.CancelFunc
 	sendingCount int32
-
-	messages struct {
-		sync.Mutex
-		buf []TalkMessage
-	}
+	messageQueue MessageQueue
 }
 
 func NewTalk(titlePrefix string, token string) *Talk {
@@ -86,39 +81,16 @@ func (talk *Talk) goLoop(ctx context.Context) {
 				bucketChan <- struct{}{}
 			}
 		case <-checkTicker.C:
-			for len(bucketChan) > 0 && len(talk.messages.buf) > 0 {
+			for len(bucketChan) > 0 && talk.messageQueue.Size() > 0 {
 				<-bucketChan
 
-				var msg, batch = talk.popBatchMessage()
+				var msg, batch = talk.messageQueue.PopBatchMessage()
 				sendDirect(msg, batch)
 			}
 		case <-ctx.Done():
 			return
 		}
 	}
-}
-
-func (talk *Talk) popBatchMessage() (TalkMessage, int) {
-	talk.messages.Lock()
-	var first = talk.messages.buf[0]
-	var batch = 1
-	for i := 1; i < len(talk.messages.buf); i++ {
-		var msg = talk.messages.buf[i]
-		if msg.Text != first.Text || msg.Level != first.Level && msg.Title != first.Title {
-			break
-		}
-
-		batch++
-	}
-
-	var newSize = len(talk.messages.buf) - batch
-	for i := 0; i < newSize; i++ {
-		talk.messages.buf[i] = talk.messages.buf[i+batch]
-	}
-
-	talk.messages.buf = talk.messages.buf[:newSize]
-	talk.messages.Unlock()
-	return first, batch
 }
 
 func (talk *Talk) Close() error {
@@ -161,9 +133,7 @@ func (talk *Talk) sendMessage(title string, text string, level string) {
 		Token:     talk.token,
 	}
 
-	talk.messages.Lock()
-	talk.messages.buf = append(talk.messages.buf, msg)
-	talk.messages.Unlock()
+	talk.messageQueue.Push(msg)
 }
 
 func (talk *Talk) GetTitlePrefix() string {
