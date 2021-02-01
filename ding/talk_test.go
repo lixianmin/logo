@@ -42,20 +42,16 @@ func TestDingTalkHook(t *testing.T) {
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkHook = NewTalkHook(TalkHookArgs{
-		Talker:      talk,
-		FilterLevel: logo.LevelWarn,
-	})
-
+	var talkHook = NewTalkHook(talk, WithFilterLevel(logo.LevelWarn))
 	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in dingTalk.")
 
 	// 这是一个batch消息，可以合并的
-	for i:= 0; i< 10; i++ {
+	for i := 0; i < 10; i++ {
 		l.Warn("This warning will appear in dingTalk.")
 	}
 
 	l.Error("This is an %q.", "error")
-	//time.Sleep(time.Minute)
+	// time.Sleep(time.Minute)
 }
