@@ -75,13 +75,13 @@ func (my *TalkHook) Write(message logo.Message) {
 	var talker = my.talker
 	switch level {
 	case logo.LevelDebug:
-		talker.SendDebug("", text)
+		talker.PostDebug("", text)
 	case logo.LevelInfo:
-		talker.SendInfo("", text)
+		talker.PostInfo("", text)
 	case logo.LevelWarn:
-		talker.SendWarn("", text)
+		talker.PostWarn("", text)
 	case logo.LevelError:
-		talker.SendError("", text)
+		talker.PostError("", text)
 	}
 }
 

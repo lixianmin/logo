@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/lixianmin/got/timex"
 	"io/ioutil"
 	"net/http"
 	"sync/atomic"
@@ -106,23 +107,23 @@ func (talk *Talk) Close() error {
 	return nil
 }
 
-func (talk *Talk) SendDebug(title string, text string) {
-	talk.sendMessage(title, text, "Debug")
+func (talk *Talk) PostDebug(title string, text string) {
+	talk.postMessage(title, text, Debug)
 }
 
-func (talk *Talk) SendInfo(title string, text string) {
-	talk.sendMessage(title, text, "Info")
+func (talk *Talk) PostInfo(title string, text string) {
+	talk.postMessage(title, text, Info)
 }
 
-func (talk *Talk) SendWarn(title string, text string) {
-	talk.sendMessage(title, text, "Warn")
+func (talk *Talk) PostWarn(title string, text string) {
+	talk.postMessage(title, text, Warn)
 }
 
-func (talk *Talk) SendError(title string, text string) {
-	talk.sendMessage(title, text, "Error")
+func (talk *Talk) PostError(title string, text string) {
+	talk.postMessage(title, text, Error)
 }
 
-func (talk *Talk) sendMessage(title string, text string, level string) {
+func (talk *Talk) postMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
 	var msg = Message{
@@ -134,6 +135,15 @@ func (talk *Talk) sendMessage(title string, text string, level string) {
 	}
 
 	talk.messageQueue.Push(msg)
+}
+
+func (talk *Talk) SendMessage(title string, text string, level string) {
+	var text1 = text + "  \n  " + time.Now().Format(timex.Layout)
+
+	const batch = 1
+	var title1 = fmt.Sprintf("[%s(%d) %s] %s", level, batch, talk.titlePrefix, title)
+	var text2 = fmt.Sprintf("### %s  \n  %s", title1, text1)
+	_, _ = SendMarkdown(title1, text2, talk.token)
 }
 
 func (talk *Talk) GetTitlePrefix() string {

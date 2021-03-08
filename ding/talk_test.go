@@ -2,6 +2,7 @@ package ding
 
 import (
 	"fmt"
+	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/logo"
 	"os"
 	"testing"
@@ -30,9 +31,9 @@ func TestDingTalk(t *testing.T) {
 	var talk = createTalk()
 	defer talk.Close()
 
-	talk.SendInfo("Info title", "This is an info")
-	talk.SendWarn("Warn title", "This is a warning")
-	talk.SendError("Error title", "This is an error")
+	talk.PostInfo("Info title", "This is an info")
+	talk.PostWarn("Warn title", "This is a warning")
+	talk.PostError("Error title", "This is an error")
 }
 
 func TestDingTalkHook(t *testing.T) {
@@ -54,4 +55,16 @@ func TestDingTalkHook(t *testing.T) {
 
 	l.Error("This is an %q.", "error")
 	// time.Sleep(time.Minute)
+}
+
+func TestDumpIfPanic(t *testing.T) {
+	defer loom.DumpIfPanic()
+	var talk = createTalk()
+
+	loom.Initialize(func(data []byte) {
+		var message = string(data)
+		talk.SendMessage("", message, Warn)
+	})
+
+	panic("hello")
 }
