@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/lixianmin/got/timex"
 	"github.com/lixianmin/logo/ding"
 	"io/ioutil"
 	"net/http"
@@ -73,8 +74,7 @@ func (talk *InfoFlow) goLoop(ctx context.Context) {
 	// 格式化并直接发送消息
 	var sendDirect = func(msg ding.Message, batch int) {
 		atomic.AddInt32(&talk.sendingCount, int32(-batch))
-		const layout = "2006-01-02 15:04:05"
-		var text = msg.Text + "\n" + msg.Timestamp.Format(layout)
+		var text = msg.Text + "\n" + msg.Timestamp.Format(timex.Layout)
 
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
 		_, _ = SendMarkdown(title1, text, msg.Token)
@@ -111,23 +111,23 @@ func (talk *InfoFlow) Close() error {
 	return nil
 }
 
-func (talk *InfoFlow) SendDebug(title string, text string) {
-	talk.sendMessage(title, text, "Debug")
+func (talk *InfoFlow) PostDebug(title string, text string) {
+	talk.postMessage(title, text, ding.Debug)
 }
 
-func (talk *InfoFlow) SendInfo(title string, text string) {
-	talk.sendMessage(title, text, "Info")
+func (talk *InfoFlow) PostInfo(title string, text string) {
+	talk.postMessage(title, text, ding.Info)
 }
 
-func (talk *InfoFlow) SendWarn(title string, text string) {
-	talk.sendMessage(title, text, "Warn")
+func (talk *InfoFlow) PostWarn(title string, text string) {
+	talk.postMessage(title, text, ding.Warn)
 }
 
-func (talk *InfoFlow) SendError(title string, text string) {
-	talk.sendMessage(title, text, "Error")
+func (talk *InfoFlow) PostError(title string, text string) {
+	talk.postMessage(title, text, ding.Error)
 }
 
-func (talk *InfoFlow) sendMessage(title string, text string, level string) {
+func (talk *InfoFlow) postMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
 	var msg = ding.Message{
@@ -139,6 +139,14 @@ func (talk *InfoFlow) sendMessage(title string, text string, level string) {
 	}
 
 	talk.messageQueue.Push(msg)
+}
+
+func (talk *InfoFlow) SendMessage(title string, text string, level string) {
+	var text1 = text + "\n" + time.Now().Format(timex.Layout)
+
+	const batch = 1
+	var title1 = fmt.Sprintf("[%s(%d) %s] %s", level, batch, talk.titlePrefix, title)
+	_, _ = SendMarkdown(title1, text1, talk.token)
 }
 
 func (talk *InfoFlow) GetTitlePrefix() string {
