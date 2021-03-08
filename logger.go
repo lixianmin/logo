@@ -73,11 +73,15 @@ func (my *Logger) goLoop(later loom.Later) {
 
 func (my *Logger) AddHook(hook IHook) {
 	if !std.IsNil(hook) {
-		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
-			var fetus = args.(*loggerFetus)
-			fetus.AddHook(hook)
-			return nil, nil
-		}).Get1()
+		select {
+		case <-my.wc.C():
+		default:
+			my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+				var fetus = args.(*loggerFetus)
+				fetus.AddHook(hook)
+				return nil, nil
+			}).Get1()
+		}
 	}
 }
 
@@ -93,11 +97,15 @@ func (my *Logger) Write(p []byte) (n int, err error) {
 }
 
 func (my *Logger) Flush() {
-	my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
-		var fetus = args.(*loggerFetus)
-		fetus.FlushMessage(my.messageChan)
-		return nil, nil
-	}).Get1()
+	select {
+	case <-my.wc.C():
+	default:
+		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+			var fetus = args.(*loggerFetus)
+			fetus.FlushMessage(my.messageChan)
+			return nil, nil
+		}).Get1()
+	}
 }
 
 func (my *Logger) Close() error {
@@ -108,14 +116,18 @@ func (my *Logger) Close() error {
 }
 
 func (my *Logger) SetFilterLevel(level int) {
-	if level > LevelNone && level < LevelMax {
-		atomic.StoreInt32(&my.filterLevel, int32(level))
+	select {
+	case <-my.wc.C():
+	default:
+		if level > LevelNone && level < LevelMax {
+			atomic.StoreInt32(&my.filterLevel, int32(level))
 
-		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
-			var fetus = args.(*loggerFetus)
-			fetus.SetFilterLevel(level)
-			return nil, nil
-		})
+			my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+				var fetus = args.(*loggerFetus)
+				fetus.SetFilterLevel(level)
+				return nil, nil
+			})
+		}
 	}
 }
 
