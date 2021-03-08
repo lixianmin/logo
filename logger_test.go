@@ -2,6 +2,7 @@ package logo
 
 import (
 	"fmt"
+	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/randx"
 	"math"
 	"sync"
@@ -190,4 +191,14 @@ func TestJsonConcurrent(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestPanicDump(t *testing.T) {
+	defer loom.DumpIfPanic()
+
+	loom.Initialize(func(data []byte) {
+		Warn(string(data))
+	})
+
+	panic("faint")
 }
