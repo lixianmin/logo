@@ -141,7 +141,7 @@ func (my *Logger) SetStackLevel(level int32) {
 	}
 }
 
-// 第一个参数有可能是format，也有可能是任意其它类型的对象
+// Debug 第一个参数有可能是format，也有可能是任意其它类型的对象
 func (my *Logger) Debug(first interface{}, args ...interface{}) {
 	var text = formatLog(first, args...)
 	my.pushMessage(Message{text: text, level: LevelDebug})
