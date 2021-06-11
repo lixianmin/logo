@@ -17,7 +17,7 @@ type RecoverableError struct {
 	lastTime           time.Time
 }
 
-func NewRecoverableError(checker RecoverableChecker, interval time.Duration) *RecoverableError {
+func NewRecoverableError(interval time.Duration, checker RecoverableChecker) *RecoverableError {
 	if checker == nil {
 		checker = func(message string) bool {
 			return false
