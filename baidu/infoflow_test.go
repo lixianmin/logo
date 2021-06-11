@@ -1,10 +1,12 @@
 package baidu
 
 import (
+	"context"
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/logo"
 	"github.com/lixianmin/logo/ding"
 	"testing"
+	"time"
 )
 
 /********************************************************************
@@ -54,4 +56,24 @@ func TestDumpIfPanic(t *testing.T) {
 	})
 
 	panic("hello")
+}
+
+func TestRecoverableError(t *testing.T) {
+	var talk = createTalk()
+
+	var l = logo.NewLogger()
+	defer l.Close()
+	l.SetFuncCallDepth(4)
+
+	var talkHook = NewInfoFlowHook(talk, WithFilterLevel(logo.LevelWarn), WithRecoverableError(5*time.Second, func(message string) bool {
+		return message == context.DeadlineExceeded.Error()
+	}))
+
+	l.AddHook(talkHook)
+	l.Warn("This warning will appear in ding talk.")
+
+	for i := 0; i < 11; i++ {
+		l.Warn(context.DeadlineExceeded.Error())
+		time.Sleep(time.Second)
+	}
 }

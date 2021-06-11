@@ -29,8 +29,8 @@ func WithFilterLevel(level int) InfoFlowHookOption {
 }
 
 // WithRecoverableError 对可自动恢复的错误消息：如果只是interval之内收到，则不会发送；如果持续时间超过interval，则会发送
-func WithRecoverableError(checker ding.RecoverableChecker, interval time.Duration) InfoFlowHookOption {
+func WithRecoverableError(interval time.Duration, checker ding.RecoverableChecker) InfoFlowHookOption {
 	return func(options *infoFlowHookOptions) {
-		options.Recoverable = ding.NewRecoverableError(checker, interval)
+		options.Recoverable = ding.NewRecoverableError(interval, checker)
 	}
 }
