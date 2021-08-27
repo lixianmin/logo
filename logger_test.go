@@ -49,7 +49,8 @@ func TestRollingFileHook(t *testing.T) {
 
 	l.AddHook(fileHook)
 
-	for i := 0; i < 10; i++ {
+	// 测试archive中生成的文件名
+	for i := 0; i < 200; i++ {
 		l.Info("This is info")
 		l.Warn("I am a warning")
 		l.Error("Error occurred")

@@ -5,7 +5,10 @@ import (
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/logo"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 )
 
 /********************************************************************
@@ -54,7 +57,16 @@ func TestDingTalkHook(t *testing.T) {
 	}
 
 	l.Error("This is an %q.", "error")
-	// time.Sleep(time.Minute)
+
+	// 测试huge message
+	var content = make([]string, 0, 2048)
+	for i := 0; i < 2048; i++ {
+		content = append(content, strconv.Itoa(i))
+	}
+
+	l.Warn("HugeMessage: " + strings.Join(content, ","))
+
+	time.Sleep(time.Minute)
 }
 
 func TestDumpIfPanic(t *testing.T) {
