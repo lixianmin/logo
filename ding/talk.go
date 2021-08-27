@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/lixianmin/got/convert"
-	"github.com/lixianmin/got/mathx"
 	"github.com/lixianmin/got/timex"
 	"io/ioutil"
 	"net/http"
@@ -161,8 +160,14 @@ func SendMarkdown(title string, text string, token string) ([]byte, error) {
 	const webHook = "https://oapi.dingtalk.com/robot/send?access_token="
 	var url = webHook + token
 
+	// 裁剪待发送消息体的最大长度
 	const cutLength = 1024
-	var sending = bytes.NewBuffer(data[:mathx.MinInt(cutLength, len(data))])
+	if len(data) > cutLength {
+		data = append(data[:cutLength], "..."...)
+	}
+
+	// 发送
+	var sending = bytes.NewBuffer(data)
 	response, err := http.Post(url, "application/json", sending)
 	if err != nil {
 		return nil, err
