@@ -3,8 +3,9 @@ package ding
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/lixianmin/got/convert"
+	"github.com/lixianmin/got/mathx"
 	"github.com/lixianmin/got/timex"
 	"io/ioutil"
 	"net/http"
@@ -152,14 +153,17 @@ func (talk *Talk) GetTitlePrefix() string {
 
 func SendMarkdown(title string, text string, token string) ([]byte, error) {
 	var message = MarkdownMessage{MsgType: "markdown", Markdown: MarkdownParams{Title: title, Text: text}}
-	var content, err = json.Marshal(message)
+	var data, err = convert.ToJsonE(message)
 	if err != nil {
 		return nil, err
 	}
 
 	const webHook = "https://oapi.dingtalk.com/robot/send?access_token="
 	var url = webHook + token
-	response, err := http.Post(url, "application/json", bytes.NewBuffer(content))
+
+	const cutLength = 1024
+	var sending = bytes.NewBuffer(data[:mathx.MinInt(cutLength, len(data))])
+	response, err := http.Post(url, "application/json", sending)
 	if err != nil {
 		return nil, err
 	}
