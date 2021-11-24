@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"fmt"
 	"github.com/lixianmin/got/convert"
 	"strconv"
 	"time"
@@ -31,6 +32,8 @@ func AppendJson(b []byte, v interface{}) []byte {
 		return strconv.AppendBool(b, v)
 	case error:
 		return strconv.AppendQuote(b, v.Error())
+	case fmt.Stringer: // 实现String()方法
+		return strconv.AppendQuote(b, v.String())
 	case time.Time:
 		b = append(b, '"')
 		b = v.AppendFormat(b, time.RFC3339Nano)
