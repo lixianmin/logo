@@ -35,7 +35,7 @@
 3. 部分设计参考log4j，可以自定义hook，从而支持输出到其它设备
 4. ConsoleHook输出到控制台
 5. RollingFileHook输出到文件，支持自定义输出目录和文件名，支持按文件大小的归档
-6. **赠送**：ding.TalkHook输出日志到钉钉，baidu.InfoflowHook输出日志到百度如流
+6. **赠送**：ding.TalkHook输出日志到钉钉
 
 
 
