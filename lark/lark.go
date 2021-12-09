@@ -76,7 +76,9 @@ func (talk *Lark) goLoop(ctx context.Context) {
 		var text = msg.Text + "\n" + msg.Timestamp.Format(timex.Layout)
 
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
-		_, _ = SendMarkdown(title1, text, msg.Token)
+		if _, err := SendMarkdown(title1, text, msg.Token); err != nil {
+			fmt.Printf("err=%q\n", err)
+		}
 	}
 
 	for {

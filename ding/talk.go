@@ -72,7 +72,9 @@ func (talk *Talk) goLoop(ctx context.Context) {
 
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
 		var text1 = fmt.Sprintf("### %s  \n  %s", title1, text)
-		_, _ = SendMarkdown(title1, text1, msg.Token)
+		if _, err := SendMarkdown(title1, text1, msg.Token); err != nil {
+			fmt.Printf("err=%q\n", err)
+		}
 	}
 
 	for {
@@ -143,7 +145,9 @@ func (talk *Talk) SendMessage(title string, text string, level string) {
 	const batch = 1
 	var title1 = fmt.Sprintf("[%s(%d) %s] %s", level, batch, talk.titlePrefix, title)
 	var text2 = fmt.Sprintf("### %s  \n  %s", title1, text1)
-	_, _ = SendMarkdown(title1, text2, talk.token)
+	if _, err := SendMarkdown(title1, text2, talk.token); err != nil {
+		fmt.Printf("err=%q\n", err)
+	}
 }
 
 func (talk *Talk) GetTitlePrefix() string {
