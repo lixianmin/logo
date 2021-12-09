@@ -22,7 +22,7 @@ func newLoggerFetus() *loggerFetus {
 	}
 }
 
-// 外面保证传入的hook不是nil
+// AddHook 外面保证传入的hook不是nil
 func (fetus *loggerFetus) AddHook(hook IHook) {
 	fetus.hooks = append(fetus.hooks, hook)
 }
