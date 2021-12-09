@@ -7,6 +7,7 @@ import (
 	"github.com/lixianmin/got/convert"
 	"github.com/lixianmin/got/timex"
 	"github.com/lixianmin/logo/ding"
+	"github.com/lixianmin/logo/lark/internal"
 	"io/ioutil"
 	"net/http"
 	"sync/atomic"
@@ -76,7 +77,7 @@ func (talk *Lark) goLoop(ctx context.Context) {
 		var text = msg.Text + "\n" + msg.Timestamp.Format(timex.Layout)
 
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
-		if _, err := SendMarkdown(title1, text, msg.Token); err != nil {
+		if _, err := SendPost(title1, text, msg.Token); err != nil {
 			fmt.Printf("err=%q\n", err)
 		}
 	}
@@ -147,7 +148,7 @@ func (talk *Lark) SendMessage(title string, text string, level string) {
 
 	const batch = 1
 	var title1 = fmt.Sprintf("[%s(%d) %s] %s", level, batch, talk.titlePrefix, title)
-	if _, err := SendMarkdown(title1, text1, talk.token); err != nil {
+	if _, err := SendPost(title1, text1, talk.token); err != nil {
 		fmt.Printf("err=%q\n", err)
 	}
 }
@@ -156,11 +157,18 @@ func (talk *Lark) GetTitlePrefix() string {
 	return talk.titlePrefix
 }
 
-func SendMarkdown(title string, text string, token string) ([]byte, error) {
-	var content = title + "\n" + text
-
-	//'{"msg_type":"text","content":{"text":"request example"}}'
-	var message = Message{MsgType: "text", Content: Content{Text: content}}
+func SendPost(title string, text string, token string) ([]byte, error) {
+	var message = internal.Message{
+		MsgType: "post",
+		Content: internal.Content{Post: internal.Post{
+			ZhCN: internal.ZhCN{
+				Title: title,
+				Content: [][]internal.Item{
+					{{Tag: "text", Text: text}},
+				}},
+		},
+		},
+	}
 	var data, err = convert.ToJsonE(message)
 	if err != nil {
 		return nil, err
@@ -177,7 +185,7 @@ func SendMarkdown(title string, text string, token string) ([]byte, error) {
 
 	// 发送
 	var sending = bytes.NewBuffer(data)
-	response, err := http.Post(url, "application/json", sending)
+	response, err := http.Post(url, "application/json; charset=utf-8", sending)
 	if err != nil {
 		return nil, err
 	}

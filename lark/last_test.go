@@ -12,7 +12,7 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 func TestNewLark(t *testing.T) {
-	var token = "5ff9b6ab-fbe3-490f-8980-71509263efe2"
+	var token = "xxxxxxxxxxx"
 	var lark = NewLark("hello", token)
 	lark.SendMessage("title", "text", "info")
 }
