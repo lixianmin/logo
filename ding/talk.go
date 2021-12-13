@@ -54,7 +54,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 	var producerTicker = time.NewTicker(tokenFrequency)
 	var checkTicker = time.NewTicker(1 * time.Second)
 	var bucketChan = make(chan struct{}, maxBucket)
-	var ban = NewMessageBan()
+	var block = NewMessageBlock()
 
 	// 预先准备一个bucket
 	bucketChan <- struct{}{}
@@ -70,7 +70,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
 		var key = title1 + msg.Text
 
-		if !ban.CheckBanned(key) {
+		if !block.CheckBlocked(key) {
 			var text = msg.Text + "  \n  " + msg.Timestamp.Format(timex.Layout)
 
 			atomic.AddInt32(&talk.sendingCount, int32(-batch))
@@ -94,7 +94,6 @@ func (talk *Talk) goLoop(ctx context.Context) {
 				var msg, batch = talk.messageQueue.PopBatchMessage()
 				sendDirect(msg, batch)
 			}
-			ban.CheckRemoveExpired()
 		case <-ctx.Done():
 			return
 		}
