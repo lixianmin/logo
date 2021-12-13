@@ -39,6 +39,16 @@ func TestDingTalk(t *testing.T) {
 	talk.PostError("Error title", "This is an error")
 }
 
+func TestMessageBan(t *testing.T) {
+	var talk = createTalk()
+	defer talk.Close()
+
+	for i := 0; i < 100; i++ {
+		talk.PostInfo("Info title", "This is an info")
+		time.Sleep(time.Second)
+	}
+}
+
 func TestDingTalkHook(t *testing.T) {
 	var talk = createTalk()
 

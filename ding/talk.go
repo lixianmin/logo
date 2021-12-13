@@ -54,6 +54,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 	var producerTicker = time.NewTicker(tokenFrequency)
 	var checkTicker = time.NewTicker(1 * time.Second)
 	var bucketChan = make(chan struct{}, maxBucket)
+	var ban = NewMessageBan()
 
 	// 预先准备一个bucket
 	bucketChan <- struct{}{}
@@ -66,14 +67,16 @@ func (talk *Talk) goLoop(ctx context.Context) {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg Message, batch int) {
-		atomic.AddInt32(&talk.sendingCount, int32(-batch))
-		const layout = "2006-01-02 15:04:05"
-		var text = msg.Text + "  \n  " + msg.Timestamp.Format(layout)
-
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
-		var text1 = fmt.Sprintf("### %s  \n  %s", title1, text)
-		if _, err := SendMarkdown(title1, text1, msg.Token); err != nil {
-			fmt.Printf("err=%q\n", err)
+		var key = title1 + msg.Text
+		if !ban.CheckBanned(key) {
+			var text = msg.Text + "  \n  " + msg.Timestamp.Format(timex.Layout)
+
+			atomic.AddInt32(&talk.sendingCount, int32(-batch))
+			var text1 = fmt.Sprintf("### %s  \n  %s", title1, text)
+			if _, err := SendMarkdown(title1, text1, msg.Token); err != nil {
+				fmt.Printf("err=%q\n", err)
+			}
 		}
 	}
 
