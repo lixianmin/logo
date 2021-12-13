@@ -1,9 +1,8 @@
 package ding
 
 import (
-	"github.com/lixianmin/got/loom"
+	"fmt"
 	"math"
-	"sync"
 	"time"
 )
 
@@ -22,7 +21,6 @@ type BanItem struct {
 
 type MessageBan struct {
 	cache map[string]*BanItem
-	m     sync.Mutex
 	step  time.Duration
 }
 
@@ -32,24 +30,10 @@ func NewMessageBan() *MessageBan {
 		step:  time.Second,
 	}
 
-	loom.Go(my.goLoop)
 	return my
 }
 
-func (my *MessageBan) goLoop(later loom.Later) {
-	var removeTicker = later.NewTicker(10 * time.Second)
-	for {
-		select {
-		case <-removeTicker.C:
-			my.checkRemoveExpired()
-		}
-	}
-}
-
 func (my *MessageBan) CheckBanned(message string) bool {
-	my.m.Lock()
-	defer my.m.Unlock()
-
 	var now = time.Now()
 	var item, ok = my.cache[message]
 	if !ok {
@@ -70,6 +54,7 @@ func (my *MessageBan) CheckBanned(message string) bool {
 		item.counter += 1
 	}
 
+	fmt.Printf("canSpeak=%t, counter=%d, message=%s\n", canSpeak, item.counter, message)
 	return isBanned
 }
 
@@ -85,10 +70,7 @@ func (my *MessageBan) getBanTime(item *BanItem) time.Time {
 	return speakTime
 }
 
-func (my *MessageBan) checkRemoveExpired() {
-	my.m.Lock()
-	defer my.m.Unlock()
-
+func (my *MessageBan) CheckRemoveExpired() {
 	const despairTime = 10 * time.Minute
 	var expireTime = time.Now().Add(-despairTime)
 	for message, item := range my.cache {

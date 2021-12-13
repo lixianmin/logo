@@ -43,7 +43,7 @@ func TestMessageBan(t *testing.T) {
 	var talk = createTalk()
 	defer talk.Close()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 200; i++ {
 		talk.PostInfo("Info title", "This is an info")
 		time.Sleep(time.Second)
 	}

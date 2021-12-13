@@ -68,7 +68,8 @@ func (talk *Talk) goLoop(ctx context.Context) {
 	// 格式化并直接发送消息
 	var sendDirect = func(msg Message, batch int) {
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
-		var key = title1 + msg.Text
+		var key = title1 + "  \n  " + msg.Text
+
 		if !ban.CheckBanned(key) {
 			var text = msg.Text + "  \n  " + msg.Timestamp.Format(timex.Layout)
 
@@ -93,6 +94,7 @@ func (talk *Talk) goLoop(ctx context.Context) {
 				var msg, batch = talk.messageQueue.PopBatchMessage()
 				sendDirect(msg, batch)
 			}
+			ban.CheckRemoveExpired()
 		case <-ctx.Done():
 			return
 		}
