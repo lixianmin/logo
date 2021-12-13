@@ -61,6 +61,7 @@ func (talk *Lark) goLoop(ctx context.Context) {
 	var producerTicker = time.NewTicker(tokenFrequency)
 	var checkTicker = time.NewTicker(500 * time.Millisecond)
 	var bucketChan = make(chan struct{}, maxBucket)
+	var ban = ding.NewMessageBan()
 
 	// 预先准备一个bucket
 	bucketChan <- struct{}{}
@@ -73,12 +74,15 @@ func (talk *Lark) goLoop(ctx context.Context) {
 
 	// 格式化并直接发送消息
 	var sendDirect = func(msg ding.Message, batch int) {
-		atomic.AddInt32(&talk.sendingCount, int32(-batch))
-		var text = msg.Text + "\n" + msg.Timestamp.Format(timex.Layout)
-
 		var title1 = fmt.Sprintf("[%s(%d) %s] %s", msg.Level, batch, talk.titlePrefix, msg.Title)
-		if _, err := SendPost(title1, text, msg.Token); err != nil {
-			fmt.Printf("err=%q\n", err)
+		var key = title1 + msg.Text
+		if !ban.CheckBanned(key) {
+			atomic.AddInt32(&talk.sendingCount, int32(-batch))
+			var text = msg.Text + "\n" + msg.Timestamp.Format(timex.Layout)
+
+			if _, err := SendPost(title1, text, msg.Token); err != nil {
+				fmt.Printf("err=%q\n", err)
+			}
 		}
 	}
 
@@ -95,6 +99,8 @@ func (talk *Lark) goLoop(ctx context.Context) {
 				var msg, batch = talk.messageQueue.PopBatchMessage()
 				sendDirect(msg, batch)
 			}
+
+			ban.CheckRemoveExpired()
 		case <-ctx.Done():
 			return
 		}

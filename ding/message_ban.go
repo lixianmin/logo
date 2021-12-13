@@ -1,7 +1,6 @@
 package ding
 
 import (
-	"fmt"
 	"math"
 	"time"
 )
@@ -33,16 +32,16 @@ func NewMessageBan() *MessageBan {
 	return my
 }
 
-func (my *MessageBan) CheckBanned(message string) bool {
+func (my *MessageBan) CheckBanned(key string) bool {
 	var now = time.Now()
-	var item, ok = my.cache[message]
+	var item, ok = my.cache[key]
 	if !ok {
 		item = &BanItem{
 			startTime: now,
 			counter:   0,
 		}
 
-		my.cache[message] = item
+		my.cache[key] = item
 	}
 
 	item.touchTime = now
@@ -54,7 +53,7 @@ func (my *MessageBan) CheckBanned(message string) bool {
 		item.counter += 1
 	}
 
-	fmt.Printf("canSpeak=%t, counter=%d, message=%s\n", canSpeak, item.counter, message)
+	//fmt.Printf("canSpeak=%t, counter=%d, key=%s\n", canSpeak, item.counter, key)
 	return isBanned
 }
 
