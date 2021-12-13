@@ -34,9 +34,9 @@ func TestDingTalk(t *testing.T) {
 	var talk = createTalk()
 	defer talk.Close()
 
-	talk.PostInfo("Info title", "This is an info")
-	talk.PostWarn("Warn title", "This is a warning")
-	talk.PostError("Error title", "This is an error")
+	talk.PostMessage("Info title", "This is an info", Info)
+	talk.PostMessage("Warn title", "This is a warning", Warn)
+	talk.PostMessage("Error title", "This is an error", Error)
 }
 
 func TestMessageBan(t *testing.T) {
@@ -44,7 +44,7 @@ func TestMessageBan(t *testing.T) {
 	defer talk.Close()
 
 	for i := 0; i < 200; i++ {
-		talk.PostInfo("Info title", "This is an info")
+		talk.PostMessage("Info title", "This is an info", Info)
 		time.Sleep(time.Second)
 	}
 }

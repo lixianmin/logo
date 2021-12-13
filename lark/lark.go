@@ -118,23 +118,7 @@ func (talk *Lark) Close() error {
 	return nil
 }
 
-func (talk *Lark) PostDebug(title string, text string) {
-	talk.postMessage(title, text, ding.Debug)
-}
-
-func (talk *Lark) PostInfo(title string, text string) {
-	talk.postMessage(title, text, ding.Info)
-}
-
-func (talk *Lark) PostWarn(title string, text string) {
-	talk.postMessage(title, text, ding.Warn)
-}
-
-func (talk *Lark) PostError(title string, text string) {
-	talk.postMessage(title, text, ding.Error)
-}
-
-func (talk *Lark) postMessage(title string, text string, level string) {
+func (talk *Lark) PostMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
 	var msg = ding.Message{

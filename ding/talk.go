@@ -113,23 +113,7 @@ func (talk *Talk) Close() error {
 	return nil
 }
 
-func (talk *Talk) PostDebug(title string, text string) {
-	talk.postMessage(title, text, Debug)
-}
-
-func (talk *Talk) PostInfo(title string, text string) {
-	talk.postMessage(title, text, Info)
-}
-
-func (talk *Talk) PostWarn(title string, text string) {
-	talk.postMessage(title, text, Warn)
-}
-
-func (talk *Talk) PostError(title string, text string) {
-	talk.postMessage(title, text, Error)
-}
-
-func (talk *Talk) postMessage(title string, text string, level string) {
+func (talk *Talk) PostMessage(title string, text string, level string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
 	var msg = Message{

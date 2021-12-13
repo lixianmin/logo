@@ -16,11 +16,11 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type TalkHook struct {
-	talker      *Talk
+	talker      Talker
 	filterLevel int
 }
 
-func NewHook(talker *Talk, opts ...HookOption) *TalkHook {
+func NewHook(talker Talker, opts ...HookOption) *TalkHook {
 	if talker == nil {
 		panic("Talker should not be null")
 	}
@@ -72,17 +72,7 @@ func (my *TalkHook) Write(message logo.Message) {
 		text = fmt.Sprintf("%s:%d [%s()] %s %s", path.Base(first.File), first.Line, getFunctionName(first.Function), text, buffer)
 	}
 
-	var talker = my.talker
-	switch level {
-	case logo.LevelDebug:
-		talker.PostDebug("", text)
-	case logo.LevelInfo:
-		talker.PostInfo("", text)
-	case logo.LevelWarn:
-		talker.PostWarn("", text)
-	case logo.LevelError:
-		talker.PostError("", text)
-	}
+	my.talker.PostMessage("", text, levelTexts[level])
 }
 
 func getFunctionName(function string) string {

@@ -2,6 +2,7 @@ package lark
 
 import (
 	"github.com/lixianmin/logo"
+	"github.com/lixianmin/logo/ding"
 	"strconv"
 	"strings"
 	"testing"
@@ -24,9 +25,9 @@ func TestLark(t *testing.T) {
 	var talk = createLark()
 	defer talk.Close()
 
-	talk.PostInfo("Info title", "This is an info")
-	talk.PostWarn("Warn title", "This is a warning")
-	talk.PostError("Error title", "This is an error")
+	talk.PostMessage("Info title", "This is an info", ding.Info)
+	talk.PostMessage("Warn title", "This is a warning", ding.Warn)
+	talk.PostMessage("Error title", "This is an error", ding.Error)
 
 	time.Sleep(time.Minute)
 }
@@ -38,7 +39,7 @@ func TestLarkHook(t *testing.T) {
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkHook = NewHook(talk, WithFilterLevel(logo.LevelWarn))
+	var talkHook = ding.NewHook(talk, ding.WithFilterLevel(logo.LevelWarn))
 	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in lark.")
