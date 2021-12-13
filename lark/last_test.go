@@ -25,9 +25,9 @@ func TestLark(t *testing.T) {
 	var talk = createLark()
 	defer talk.Close()
 
-	talk.PostMessage("Info title", "This is an info", ding.Info)
-	talk.PostMessage("Warn title", "This is a warning", ding.Warn)
-	talk.PostMessage("Error title", "This is an error", ding.Error)
+	talk.PostMessage(logo.LevelInfo, "Info title", "This is an info")
+	talk.PostMessage(logo.LevelWarn, "Warn title", "This is a warning")
+	talk.PostMessage(logo.LevelError, "Error title", "This is an error")
 
 	time.Sleep(time.Minute)
 }

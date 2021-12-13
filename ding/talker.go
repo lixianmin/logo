@@ -11,5 +11,5 @@ Copyright (C) - All Rights Reserved
 
 type Talker interface {
 	io.Closer
-	PostMessage(title string, text string, level string)
+	PostMessage(level int, title string, text string)
 }

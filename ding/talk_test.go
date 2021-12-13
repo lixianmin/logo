@@ -34,17 +34,17 @@ func TestDingTalk(t *testing.T) {
 	var talk = createTalk()
 	defer talk.Close()
 
-	talk.PostMessage("Info title", "This is an info", Info)
-	talk.PostMessage("Warn title", "This is a warning", Warn)
-	talk.PostMessage("Error title", "This is an error", Error)
+	talk.PostMessage(logo.LevelInfo, "Info title", "This is an info")
+	talk.PostMessage(logo.LevelWarn, "Warn title", "This is a warning")
+	talk.PostMessage(logo.LevelError, "Error title", "This is an error")
 }
 
-func TestMessageBan(t *testing.T) {
+func TestMessageBlock(t *testing.T) {
 	var talk = createTalk()
 	defer talk.Close()
 
 	for i := 0; i < 200; i++ {
-		talk.PostMessage("Info title", "This is an info", Info)
+		talk.PostMessage(logo.LevelInfo, "Info title", "This is an info")
 		time.Sleep(time.Second)
 	}
 }
@@ -85,7 +85,7 @@ func TestDumpIfPanic(t *testing.T) {
 
 	loom.Initialize(func(data []byte) {
 		var message = string(data)
-		talk.SendMessage("", message, Warn)
+		talk.SendMessage(logo.LevelWarn, "", message)
 	})
 
 	panic("hello")

@@ -72,7 +72,7 @@ func (my *TalkHook) Write(message logo.Message) {
 		text = fmt.Sprintf("%s:%d [%s()] %s %s", path.Base(first.File), first.Line, getFunctionName(first.Function), text, buffer)
 	}
 
-	my.talker.PostMessage("", text, levelTexts[level])
+	my.talker.PostMessage(level, "", text)
 }
 
 func getFunctionName(function string) string {

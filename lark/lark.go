@@ -118,11 +118,11 @@ func (talk *Lark) Close() error {
 	return nil
 }
 
-func (talk *Lark) PostMessage(title string, text string, level string) {
+func (talk *Lark) PostMessage(level int, title string, text string) {
 	atomic.AddInt32(&talk.sendingCount, 1)
 
 	var msg = ding.Message{
-		Level:     level,
+		Level:     ding.GetLevelName(level),
 		Title:     title,
 		Text:      text,
 		Timestamp: time.Now(),
@@ -132,11 +132,12 @@ func (talk *Lark) PostMessage(title string, text string, level string) {
 	talk.messageQueue.Push(msg)
 }
 
-func (talk *Lark) SendMessage(title string, text string, level string) {
+func (talk *Lark) SendMessage(level int, title string, text string) {
 	var text1 = text + "\n" + time.Now().Format(timex.Layout)
 
 	const batch = 1
-	var title1 = fmt.Sprintf("[%s(%d) %s] %s", level, batch, talk.titlePrefix, title)
+	var levelName = ding.GetLevelName(level)
+	var title1 = fmt.Sprintf("[%s(%d) %s] %s", levelName, batch, talk.titlePrefix, title)
 	if _, err := SendPost(title1, text1, talk.token); err != nil {
 		fmt.Printf("err=%q\n", err)
 	}
