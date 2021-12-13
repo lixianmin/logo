@@ -56,7 +56,7 @@ func TestDingTalkHook(t *testing.T) {
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkHook = NewTalkHook(talk, WithFilterLevel(logo.LevelWarn))
+	var talkHook = NewHook(talk, WithFilterLevel(logo.LevelWarn))
 	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in dingTalk.")

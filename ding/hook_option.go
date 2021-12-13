@@ -9,14 +9,14 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type talkHookOptions struct {
+type hookOptions struct {
 	FilterLevel int
 }
 
-type TalkHookOption func(*talkHookOptions)
+type HookOption func(*hookOptions)
 
-func WithFilterLevel(level int) TalkHookOption {
-	return func(options *talkHookOptions) {
+func WithFilterLevel(level int) HookOption {
+	return func(options *hookOptions) {
 		if level > logo.LevelNone {
 			options.FilterLevel = level
 		}

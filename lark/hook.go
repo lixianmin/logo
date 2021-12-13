@@ -3,7 +3,6 @@ package lark
 import (
 	"fmt"
 	"github.com/lixianmin/logo"
-	"github.com/lixianmin/logo/ding"
 	"github.com/lixianmin/logo/tools"
 	"path"
 	"strings"
@@ -19,10 +18,9 @@ Copyright (C) - All Rights Reserved
 type Hook struct {
 	talker      *Lark
 	filterLevel int
-	recoverable *ding.RecoverableError
 }
 
-func NewLarkHook(talker *Lark, opts ...HookOption) *Hook {
+func NewHook(talker *Lark, opts ...HookOption) *Hook {
 	if talker == nil {
 		panic("Talker should not be null")
 	}
@@ -40,7 +38,6 @@ func NewLarkHook(talker *Lark, opts ...HookOption) *Hook {
 	var my = &Hook{
 		talker:      talker,
 		filterLevel: options.FilterLevel,
-		recoverable: options.Recoverable,
 	}
 
 	return my
@@ -63,11 +60,6 @@ func (my *Hook) Write(message logo.Message) {
 	}
 
 	var text = message.GetText()
-	// 如果属于recoverable error，并且判断不需要发送消息，则返回
-	if my.recoverable != nil && !my.recoverable.NeedPostMessage(text) {
-		return
-	}
-
 	var frames = message.GetFrames()
 	if len(frames) > 0 {
 		var buffer = make([]byte, 0, 128)

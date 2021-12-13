@@ -38,7 +38,7 @@ func TestLarkHook(t *testing.T) {
 	defer l.Close()
 	l.SetFuncCallDepth(4)
 
-	var talkHook = NewLarkHook(talk, WithFilterLevel(logo.LevelWarn))
+	var talkHook = NewHook(talk, WithFilterLevel(logo.LevelWarn))
 	l.AddHook(talkHook)
 
 	l.Info("This is info, but will not appear in lark.")

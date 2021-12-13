@@ -20,13 +20,13 @@ type TalkHook struct {
 	filterLevel int
 }
 
-func NewTalkHook(talker *Talk, opts ...TalkHookOption) *TalkHook {
+func NewHook(talker *Talk, opts ...HookOption) *TalkHook {
 	if talker == nil {
 		panic("Talker should not be null")
 	}
 
 	// 默认值
-	var options = talkHookOptions{
+	var options = hookOptions{
 		FilterLevel: logo.LevelInfo,
 	}
 
