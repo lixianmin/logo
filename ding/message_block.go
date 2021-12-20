@@ -64,7 +64,8 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 	}
 
 	item.touchTime = now
-	var isBlocked = now.Before(item.blockTime)
+	var blockTime = item.blockTime
+	var isBlocked = now.Before(blockTime)
 
 	var canPass = !isBlocked
 	if canPass {
@@ -77,8 +78,8 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 		my.nextRemoveTime = now.Add(time.Minute)
 	}
 
-	fmt.Printf("canPass=%t=[blockTime(%s) < now(%s)], delta=%q, counter=%d, key=%q\n", canPass, timex.FormatTime(item.blockTime), timex.FormatTime(now),
-		timex.FormatDuration(item.blockTime.Sub(now)), item.counter, key)
+	fmt.Printf("canPass=%t=[blockTime(%s) < now(%s)], delta=%q, counter=%d, key=%q\n", canPass, timex.FormatTime(blockTime), timex.FormatTime(now),
+		timex.FormatDuration(blockTime.Sub(now)), item.counter, key)
 	return isBlocked
 }
 
