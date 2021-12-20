@@ -1,6 +1,8 @@
 package ding
 
 import (
+	"fmt"
+	"github.com/lixianmin/got/timex"
 	"math"
 	"time"
 )
@@ -13,9 +15,24 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type blockItem struct {
-	startTime time.Time
+	blockTime time.Time
 	touchTime time.Time
 	counter   int
+}
+
+func (item *blockItem) incCounter(step time.Duration) {
+	item.counter += 1
+
+	var n = float64(item.counter)
+	var candidate = step * time.Duration(math.Pow(2, n))
+
+	// 最长禁用时间
+	const maxStep = 60 * time.Minute
+	if candidate > maxStep {
+		candidate = maxStep
+	}
+
+	item.blockTime = item.blockTime.Add(candidate)
 }
 
 type MessageBlock struct {
@@ -39,7 +56,7 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 	var item, ok = my.cache[key]
 	if !ok {
 		item = &blockItem{
-			startTime: now,
+			blockTime: now,
 			counter:   0,
 		}
 
@@ -47,12 +64,11 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 	}
 
 	item.touchTime = now
-	var banTime = my.getBlockTime(item)
-	var isBlocked = now.Before(banTime)
+	var isBlocked = now.Before(item.blockTime)
 
 	var canPass = !isBlocked
 	if canPass {
-		item.counter += 1
+		item.incCounter(my.step)
 	}
 
 	// 每分钟移除一次过期的数据
@@ -61,20 +77,9 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 		my.nextRemoveTime = now.Add(time.Minute)
 	}
 
-	//fmt.Printf("canPass=%t, counter=%d, key=%s\n", canPass, item.counter, key)
+	fmt.Printf("canPass=%t=[blockTime(%s) < now(%s)], delta=%q, counter=%d, key=%q\n", canPass, timex.FormatTime(item.blockTime), timex.FormatTime(now),
+		timex.FormatDuration(item.blockTime.Sub(now)), item.counter, key)
 	return isBlocked
-}
-
-func (my *MessageBlock) getBlockTime(item *blockItem) time.Time {
-	var totalBlocked = my.step * time.Duration(math.Pow(2, float64(item.counter))-1)
-	// 最长禁用时间
-	const maxBlock = 60 * time.Minute
-	if totalBlocked > maxBlock {
-		totalBlocked = maxBlock
-	}
-
-	var blockTime = item.startTime.Add(totalBlocked)
-	return blockTime
 }
 
 func (my *MessageBlock) checkRemoveExpired() {
