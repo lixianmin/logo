@@ -2,6 +2,7 @@ package logo
 
 import (
 	"fmt"
+	"github.com/lixianmin/got/convert"
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/std"
 	"github.com/lixianmin/logo/tools"
@@ -186,26 +187,26 @@ func (my *Logger) pushMessage(message Message) {
 }
 
 func formatLog(first interface{}, args ...interface{}) string {
-	var msg string
-	switch first.(type) {
+	var message string
+	switch first := first.(type) {
 	case string:
-		msg = first.(string)
-		if len(args) == 0 {
-			return msg
-		}
-		if strings.Contains(msg, "%") && !strings.Contains(msg, "%%") {
-			//format string
-		} else {
-			//do not contain format char
-			msg += strings.Repeat(" %v", len(args))
-		}
+		message = first
+	case []byte:
+		message = convert.String(first)
 	default:
-		msg = fmt.Sprint(first)
-		if len(args) == 0 {
-			return msg
-		}
-		msg += strings.Repeat(" %v", len(args))
+		message = fmt.Sprint(first)
 	}
 
-	return fmt.Sprintf(msg, args...)
+	if len(args) == 0 {
+		return message
+	}
+
+	var format = message
+	var isFormat = strings.Contains(message, "%") && !strings.Contains(message, "%%")
+	if !isFormat {
+		// 如果不是format的, 则需要增加一些格式化的参数
+		format = message + strings.Repeat(" %v", len(args))
+	}
+
+	return fmt.Sprintf(format, args...)
 }
