@@ -61,3 +61,22 @@ func TestLarkHook(t *testing.T) {
 
 	time.Sleep(time.Minute)
 }
+
+func TestLarkHook2(t *testing.T) {
+	var talk = createLark()
+
+	var l = logo.NewLogger()
+	defer l.Close()
+	l.SetFuncCallDepth(4)
+
+	var talkHook = ding.NewHook(talk, ding.WithFilterLevel(logo.LevelWarn))
+	l.AddHook(talkHook)
+
+	// 这是一个batch消息，可以合并的
+	for i := 0; i < 10; i++ {
+		l.Warn("upload failed, path=%q, destPath=%q, err=%q", "some.path", "dest.path", "error")
+		time.Sleep(time.Minute)
+	}
+
+	time.Sleep(time.Minute)
+}

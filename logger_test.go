@@ -203,3 +203,17 @@ func TestPanicDump(t *testing.T) {
 
 	panic("faint")
 }
+
+func TestFormatLog(t *testing.T) {
+	type S struct {
+		Name string
+		Age  int
+	}
+
+	fmt.Println(formatLog("only first string"))
+	fmt.Println(formatLog([]byte("first is not string")))
+	fmt.Println(formatLog(S{"panda", 15}))
+
+	fmt.Println(formatLog("formatter: %s, age=%d", "pet", 23))
+	fmt.Println(formatLog("only title: ", "pet", 23))
+}
