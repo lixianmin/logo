@@ -42,18 +42,20 @@ func AppendFrameInfo(buffer []byte, frame runtime.Frame) []byte {
 
 	if frame.Function != "" {
 		buffer = append(buffer, ' ')
-		buffer = append(buffer, GetFunctionName(frame.Function)...)
+		buffer = append(buffer, trimUrlPath(frame.Function)...)
 		buffer = append(buffer, '(', ')')
 	}
 
 	return buffer
 }
 
-func GetFunctionName(function string) string {
+// frame.Function可能会是 github.com/lixianmin/logo.TestConsoleHook, 然后提取完成后会变成logo.TestConsoleHook, 包含package+object+function名
+func trimUrlPath(function string) string {
 	if function != "" {
 		var lastIndex = strings.LastIndexByte(function, '/')
 		if lastIndex > 0 {
 			var s = function[lastIndex+1:]
+			//fmt.Printf("function=%s, s = %s\n\n", function, s)
 			return s
 		}
 	}

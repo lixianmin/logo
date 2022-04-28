@@ -25,13 +25,19 @@ func TestConsoleHook(t *testing.T) {
 
 	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag, FilterLevel: LevelDebug})
 	l.AddHook(console)
+	wrapFunction(l)
 
+	l.Close()
+}
+
+func wrapFunction(l *Logger) {
 	l.Debug("Debug", "Message")
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
-
-	l.Close()
+	l.Error("Error occurred")
+	l.Error("Error occurred")
+	l.Error("Error occurred")
 }
 
 func TestRollingFileHook(t *testing.T) {
