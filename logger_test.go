@@ -35,9 +35,6 @@ func wrapFunction(l *Logger) {
 	l.Info("This is info")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
-	l.Error("Error occurred")
-	l.Error("Error occurred")
-	l.Error("Error occurred")
 }
 
 func TestRollingFileHook(t *testing.T) {
