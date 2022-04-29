@@ -41,20 +41,20 @@ func GetLogger() ILogger {
 	return theLogger
 }
 
-func Debug(first interface{}, args ...interface{}) {
-	theLogger.Debug(first, args...)
+func Debug(format string, args ...interface{}) {
+	theLogger.Debug(format, args...)
 }
 
-func Info(first interface{}, args ...interface{}) {
-	theLogger.Info(first, args...)
+func Info(format string, args ...interface{}) {
+	theLogger.Info(format, args...)
 }
 
-func Warn(first interface{}, args ...interface{}) {
-	theLogger.Warn(first, args...)
+func Warn(format string, args ...interface{}) {
+	theLogger.Warn(format, args...)
 }
 
-func Error(first interface{}, args ...interface{}) {
-	theLogger.Error(first, args...)
+func Error(format string, args ...interface{}) {
+	theLogger.Error(format, args...)
 }
 
 func JsonD(args ...interface{}) {

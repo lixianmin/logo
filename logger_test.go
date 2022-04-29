@@ -5,6 +5,7 @@ import (
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/randx"
 	"math"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -25,16 +26,13 @@ func TestConsoleHook(t *testing.T) {
 
 	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag, FilterLevel: LevelDebug})
 	l.AddHook(console)
-	wrapFunction(l)
 
-	l.Close()
-}
-
-func wrapFunction(l *Logger) {
 	l.Debug("Debug", "Message")
-	l.Info("This is info")
+	l.Info("This is info", "info args")
 	l.Warn("I am a warning")
 	l.Error("Error occurred")
+
+	l.Close()
 }
 
 func TestRollingFileHook(t *testing.T) {
@@ -96,29 +94,29 @@ func TestFileHookFilterLevel(t *testing.T) {
 	_ = l.Close()
 }
 
-func TestLogAnyObject(t *testing.T) {
-	Info(123.45678)
-	Info(t)
-}
+//func TestLogAnyObject(t *testing.T) {
+//	Info(123.45678)
+//	Info(t)
+//}
 
 func TestAutoFlush(t *testing.T) {
 	var logger = GetLogger().(*Logger)
 	logger.AddFlag(LogAsyncWrite)
 	var i = 0
 	for i < 10 {
-		Info(i)
+		Info(strconv.Itoa(i))
 		i++
 	}
 
 	logger.RemoveFlag(LogAsyncWrite)
 	for i < 20 {
-		Warn(i)
+		Warn(strconv.Itoa(i))
 		i++
 	}
 
 	logger.AddFlag(LogAsyncWrite)
 	for i < 30 {
-		Error(i)
+		Error(strconv.Itoa(i))
 		i++
 	}
 
@@ -130,7 +128,7 @@ func TestClose(t *testing.T) {
 	logger.AddFlag(LogAsyncWrite)
 
 	for i := 0; i < 50; i++ {
-		logger.Info(i)
+		logger.Info(strconv.Itoa(i))
 	}
 
 	_ = logger.Close()

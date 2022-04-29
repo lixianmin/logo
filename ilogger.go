@@ -8,8 +8,8 @@ Copyright (C) - All Rights Reserved
  *********************************************************************/
 
 type ILogger interface {
-	Debug(first interface{}, args ...interface{})
-	Info(first interface{}, args ...interface{})
-	Warn(first interface{}, args ...interface{})
-	Error(first interface{}, args ...interface{})
+	Debug(format string, args ...interface{})
+	Info(format string, args ...interface{})
+	Warn(format string, args ...interface{})
+	Error(format string, args ...interface{})
 }
