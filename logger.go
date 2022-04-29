@@ -5,6 +5,7 @@ import (
 	"github.com/lixianmin/got/convert"
 	"github.com/lixianmin/got/loom"
 	"github.com/lixianmin/got/std"
+	"github.com/lixianmin/got/taskx"
 	"github.com/lixianmin/logo/tools"
 	"strings"
 	"sync/atomic"
@@ -26,7 +27,7 @@ type Logger struct {
 	stackLevel    int32
 
 	wc    loom.WaitClose
-	tasks *loom.TaskQueue
+	tasks *taskx.Queue
 }
 
 func NewLogger(opts ...LoggerOption) *Logger {
@@ -47,7 +48,7 @@ func NewLogger(opts ...LoggerOption) *Logger {
 		stackLevel:    LevelError,
 	}
 
-	my.tasks = loom.NewTaskQueue(loom.WithCloseChan(my.wc.C()))
+	my.tasks = taskx.NewQueue(taskx.WithCloseChan(my.wc.C()))
 	loom.Go(my.goLoop)
 
 	return my
