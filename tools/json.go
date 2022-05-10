@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/lixianmin/got/convert"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,46 @@ author:     lixianmin
 
 this file is derived from go-redis/v8/internal/util.go
 *********************************************************************/
+
+var bufferPool = &sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 0, 256)
+	},
+}
+
+func FormatJson(args ...interface{}) string {
+	var results = bufferPool.Get().([]byte)
+	results = append(results, '{')
+	{
+		var count = len(args)
+		var halfCount = (count + 1) >> 1
+		for i := 0; i < halfCount; i++ {
+			var index = i << 1
+			var key, _ = args[index].(string)
+
+			// 如果只有奇数个参数，则输出默认值null
+			index++
+			var value interface{} = nil
+			if index < count {
+				value = args[index]
+			}
+
+			results = strconv.AppendQuote(results, key)
+			results = append(results, ':')
+			results = AppendJson(results, value)
+
+			if i+1 < halfCount {
+				results = append(results, ',')
+			}
+		}
+	}
+	results = append(results, '}')
+
+	// 这里results马上就要还回去了，不要使用unsafe的[]byte转string了
+	var text = string(results)
+	bufferPool.Put(results[:0])
+	return text
+}
 
 func AppendJson(b []byte, v interface{}) []byte {
 	switch v := v.(type) {
