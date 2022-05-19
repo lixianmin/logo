@@ -20,7 +20,7 @@ Copyright (C) - All Rights Reserved
 *********************************************************************/
 
 type Logger struct {
-	Flag
+	loom.Flag
 	funcCallDepth int32
 	messageChan   chan Message
 	filterLevel   int32
