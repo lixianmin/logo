@@ -56,9 +56,14 @@ func FormatJson(args ...interface{}) string {
 }
 
 func AppendJson(b []byte, v interface{}) []byte {
+	// v.(type)有值, 不代表v!=nil
+	if v == nil {
+		return append(b, "nil"...)
+	}
+
 	switch v := v.(type) {
 	case nil:
-		return append(b, "null"...)
+		return append(b, "nil"...)
 	case string:
 		return strconv.AppendQuote(b, v)
 	case []byte:
