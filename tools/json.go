@@ -57,13 +57,10 @@ func FormatJson(args ...interface{}) string {
 
 func AppendJson(b []byte, v interface{}) []byte {
 	// v.(type)有值, 不代表v!=nil
-	if v == nil {
-		return append(b, "nil"...)
-	}
-
+	const null = "nil"
 	switch v := v.(type) {
 	case nil:
-		return append(b, "nil"...)
+		return append(b, null...)
 	case string:
 		return strconv.AppendQuote(b, v)
 	case []byte:
@@ -77,9 +74,17 @@ func AppendJson(b []byte, v interface{}) []byte {
 	case bool:
 		return strconv.AppendBool(b, v)
 	case error:
-		return strconv.AppendQuote(b, v.Error())
+		var v2 = null
+		if v != nil {
+			v2 = v.Error()
+		}
+		return strconv.AppendQuote(b, v2)
 	case fmt.Stringer: // 实现String()方法
-		return strconv.AppendQuote(b, v.String())
+		var v2 = null
+		if v != nil {
+			v2 = v.String()
+		}
+		return strconv.AppendQuote(b, v2)
 	case time.Time:
 		b = append(b, '"')
 		b = v.AppendFormat(b, time.RFC3339Nano)
