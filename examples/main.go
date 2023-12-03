@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type Error struct {
+	message string
+}
+
+func (my *Error) Error() string {
+	return my.message
+}
+
 func main() {
 	var theLogger = logo.NewLogger()
 	// 开启异步写标记，提高日志输出性能
@@ -29,6 +37,16 @@ func main() {
 	year, month, day := time.Now().Date()
 	var name = fmt.Sprintf("warn of : %4d-%02d-%02d", year, month, day)
 	theLogger.Warn(name)
+
+	var err = func() error {
+		var err1 *Error
+		return err1
+	}()
+
+	var b []byte = nil
+
+	// err是个空接口指针, 但必须能正确处理
+	logo.JsonI("err", err, "err2", &Error{message: "world"}, "b", b)
 
 	var signalChan = make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGTERM)

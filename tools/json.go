@@ -3,6 +3,7 @@ package tools
 import (
 	"fmt"
 	"github.com/lixianmin/got/convert"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -16,12 +17,12 @@ this file is derived from go-redis/v8/internal/util.go
 *********************************************************************/
 
 var bufferPool = &sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return make([]byte, 0, 256)
 	},
 }
 
-func FormatJson(args ...interface{}) string {
+func FormatJson(args ...any) string {
 	var results = bufferPool.Get().([]byte)
 	results = append(results, '{')
 	{
@@ -55,7 +56,7 @@ func FormatJson(args ...interface{}) string {
 	return text
 }
 
-func AppendJson(b []byte, v interface{}) []byte {
+func AppendJson(b []byte, v any) []byte {
 	// v.(type)有值, 不代表v!=nil
 	const null = "nil"
 	switch v := v.(type) {
@@ -75,13 +76,13 @@ func AppendJson(b []byte, v interface{}) []byte {
 		return strconv.AppendBool(b, v)
 	case error:
 		var v2 = null
-		if v != nil {
+		if !reflect.ValueOf(v).IsNil() {
 			v2 = v.Error()
 		}
 		return strconv.AppendQuote(b, v2)
 	case fmt.Stringer: // 实现String()方法
 		var v2 = null
-		if v != nil {
+		if !reflect.ValueOf(v).IsNil() {
 			v2 = v.String()
 		}
 		return strconv.AppendQuote(b, v2)
