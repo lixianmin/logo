@@ -76,13 +76,13 @@ func AppendJson(b []byte, v any) []byte {
 		return strconv.AppendBool(b, v)
 	case error:
 		var v2 = null
-		if !reflect.ValueOf(v).IsNil() {
+		if !isNil(v) {
 			v2 = v.Error()
 		}
 		return strconv.AppendQuote(b, v2)
 	case fmt.Stringer: // 实现String()方法
 		var v2 = null
-		if !reflect.ValueOf(v).IsNil() {
+		if !isNil(v) {
 			v2 = v.String()
 		}
 		return strconv.AppendQuote(b, v2)
@@ -94,6 +94,16 @@ func AppendJson(b []byte, v any) []byte {
 	default:
 		return append(b, convert.ToJson(v)...)
 	}
+}
+
+func isNil(input any) bool {
+	var value = reflect.ValueOf(input)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		return value.IsNil()
+	}
+
+	return false
 }
 
 //func appendUTF8String(b []byte, s string) []byte {
