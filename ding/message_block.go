@@ -1,8 +1,6 @@
 package ding
 
 import (
-	"fmt"
-	"github.com/lixianmin/got/timex"
 	"math"
 	"time"
 )
@@ -78,8 +76,9 @@ func (my *MessageBlock) CheckBlocked(key string) bool {
 		my.nextRemoveTime = now.Add(time.Minute)
 	}
 
-	fmt.Printf("canPass=%t=[blockTime(%s) < now(%s)], delta=%q, counter=%d, key=%q\n", canPass, timex.FormatTime(blockTime), timex.FormatTime(now),
-		timex.FormatDuration(blockTime.Sub(now)), item.counter, key)
+	// 如果发送太频繁, 则会被block一段时间, 这时先不打印日志了
+	//fmt.Printf("canPass=%t=[blockTime(%s) < now(%s)], delta=%q, counter=%d, key=%q\n", canPass, timex.FormatTime(blockTime), timex.FormatTime(now),
+	//	timex.FormatDuration(now.Sub(blockTime)), item.counter, key)
 	return isBlocked
 }
 
