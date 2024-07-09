@@ -148,6 +148,30 @@ func (talk *Lark) GetTitlePrefix() string {
 }
 
 func SendPost(title string, text string, token string) ([]byte, error) {
+	var size = len(text)
+	var bts []byte = nil
+	var err error = nil
+
+	// 按700长度一个进行切割
+	const maxLen = 700
+	for i := 0; i < size; i += maxLen {
+		var j = min(i+maxLen, size)
+		var msg = text[i:j]
+		bts, err = doSendPost(title, msg, token)
+		if err != nil {
+			return bts, err
+		}
+
+		if j < size {
+			title = ""
+			time.Sleep(time.Millisecond * 100)
+		}
+	}
+
+	return bts, err
+}
+
+func doSendPost(title string, text string, token string) ([]byte, error) {
 	var message = internal.Message{
 		MsgType: "post",
 		Content: internal.Content{Post: internal.Post{
@@ -167,11 +191,11 @@ func SendPost(title string, text string, token string) ([]byte, error) {
 	const webHook = "https://open.feishu.cn/open-apis/bot/v2/hook/"
 	var url = webHook + token
 
-	// 裁剪待发送消息体的最大长度
-	const cutLength = 1024
-	if len(data) > cutLength {
-		data = append(data[:cutLength], "..."...)
-	}
+	//// 裁剪待发送消息体的最大长度
+	//const cutLength = 1024
+	//if len(data) > cutLength {
+	//	data = append(data[:cutLength], "..."...)
+	//}
 
 	// 发送
 	var sending = bytes.NewBuffer(data)
