@@ -149,6 +149,14 @@ func (talk *Lark) GetTitlePrefix() string {
 
 func SendPost(title string, text string, token string) ([]byte, error) {
 	var size = len(text)
+
+	// 限制一下消息体最大长度
+	const cutLength = 3072
+	if size > cutLength {
+		text = text[0:cutLength-3] + "..."
+		size = len(text)
+	}
+
 	var bts []byte = nil
 	var err error = nil
 
@@ -190,12 +198,6 @@ func doSendPost(title string, text string, token string) ([]byte, error) {
 
 	const webHook = "https://open.feishu.cn/open-apis/bot/v2/hook/"
 	var url = webHook + token
-
-	//// 裁剪待发送消息体的最大长度
-	//const cutLength = 1024
-	//if len(data) > cutLength {
-	//	data = append(data[:cutLength], "..."...)
-	//}
 
 	// 发送
 	var sending = bytes.NewBuffer(data)
