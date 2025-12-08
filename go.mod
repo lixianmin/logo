@@ -1,7 +1,5 @@
 module github.com/lixianmin/logo
 
-go 1.21
+go 1.22
 
-toolchain go1.21.3
-
-require github.com/lixianmin/got v0.0.0-20240709115033-27563c0e2abc
+require github.com/lixianmin/got v0.0.0-20241022084720-9b9e479e6a53
