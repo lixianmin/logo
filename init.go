@@ -34,34 +34,34 @@ func GetLogger() ILogger {
 	return theLogger
 }
 
-func Debug(format string, args ...interface{}) {
+func Debug(format string, args ...any) {
 	theLogger.Debug(format, args...)
 }
 
-func Info(format string, args ...interface{}) {
+func Info(format string, args ...any) {
 	theLogger.Info(format, args...)
 }
 
-func Warn(format string, args ...interface{}) {
+func Warn(format string, args ...any) {
 	theLogger.Warn(format, args...)
 }
 
-func Error(format string, args ...interface{}) {
+func Error(format string, args ...any) {
 	theLogger.Error(format, args...)
 }
 
-func JsonD(args ...interface{}) {
+func JsonD(args ...any) {
 	theLogger.Debug(tools.FormatJson(args...))
 }
 
-func JsonI(args ...interface{}) {
+func JsonI(args ...any) {
 	theLogger.Info(tools.FormatJson(args...))
 }
 
-func JsonW(args ...interface{}) {
+func JsonW(args ...any) {
 	theLogger.Warn(tools.FormatJson(args...))
 }
 
-func JsonE(args ...interface{}) {
+func JsonE(args ...any) {
 	theLogger.Error(tools.FormatJson(args...))
 }

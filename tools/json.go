@@ -34,7 +34,7 @@ func FormatJson(args ...any) string {
 
 			// 如果只有奇数个参数，则输出默认值null
 			index++
-			var value interface{} = nil
+			var value any = nil
 			if index < count {
 				value = args[index]
 			}

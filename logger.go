@@ -78,7 +78,7 @@ func (my *Logger) AddHook(hook IHook) {
 		select {
 		case <-my.wc.C():
 		default:
-			my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+			my.tasks.SendCallback(func(args any) (any, error) {
 				var fetus = args.(*loggerFetus)
 				fetus.AddHook(hook)
 				return nil, nil
@@ -102,7 +102,7 @@ func (my *Logger) Flush() {
 	select {
 	case <-my.wc.C():
 	default:
-		my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+		my.tasks.SendCallback(func(args any) (any, error) {
 			var fetus = args.(*loggerFetus)
 			fetus.FlushMessage(my.messageChan)
 			return nil, nil
@@ -124,7 +124,7 @@ func (my *Logger) SetFilterLevel(level int) {
 		if level > LevelNone && level < LevelMax {
 			atomic.StoreInt32(&my.filterLevel, int32(level))
 
-			my.tasks.SendCallback(func(args interface{}) (interface{}, error) {
+			my.tasks.SendCallback(func(args any) (any, error) {
 				var fetus = args.(*loggerFetus)
 				fetus.SetFilterLevel(level)
 				return nil, nil
@@ -144,22 +144,22 @@ func (my *Logger) SetStackLevel(level int32) {
 }
 
 // Debug 第一个参数有可能是format，也有可能是任意其它类型的对象
-func (my *Logger) Debug(format string, args ...interface{}) {
+func (my *Logger) Debug(format string, args ...any) {
 	var text = formatLog(format, args...)
 	my.pushMessage(Message{text: text, level: LevelDebug})
 }
 
-func (my *Logger) Info(format string, args ...interface{}) {
+func (my *Logger) Info(format string, args ...any) {
 	var text = formatLog(format, args...)
 	my.pushMessage(Message{text: text, level: LevelInfo})
 }
 
-func (my *Logger) Warn(format string, args ...interface{}) {
+func (my *Logger) Warn(format string, args ...any) {
 	var text = formatLog(format, args...)
 	my.pushMessage(Message{text: text, level: LevelWarn})
 }
 
-func (my *Logger) Error(format string, args ...interface{}) {
+func (my *Logger) Error(format string, args ...any) {
 	var text = formatLog(format, args...)
 	my.pushMessage(Message{text: text, level: LevelError})
 }
@@ -187,7 +187,7 @@ func (my *Logger) pushMessage(message Message) {
 	}
 }
 
-func formatLog(first interface{}, args ...interface{}) string {
+func formatLog(first any, args ...any) string {
 	var message string
 	switch first := first.(type) {
 	case string:
