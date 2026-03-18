@@ -2,35 +2,40 @@ package main
 
 import (
 	"fmt"
-	"github.com/lixianmin/logo"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/lixianmin/logo"
 )
 
-type Error struct {
+type MyError struct {
 	message string
 }
 
-func (my *Error) Error() string {
+func (my *MyError) Error() string {
 	return my.message
 }
 
 func main() {
 	var theLogger = logo.NewLogger()
-	// 开启异步写标记，提高日志输出性能
+	// 开启异步写标记,提高日志输出性能
 	theLogger.AddFlag(logo.LogAsyncWrite)
 
 	// 控制台日志
 	const flag = logo.FlagDate | logo.FlagTime | logo.FlagShortFile | logo.FlagLevel
 	theLogger.SetFuncCallDepth(5)
 
-	var console = logo.NewConsoleHook(logo.ConsoleHookArgs{Flag: flag})
+	var console = logo.NewConsoleHook(
+		logo.WithFlag(flag),
+	)
 	theLogger.AddHook(console)
 
 	// 文件日志
-	var rollingFile = logo.NewRollingFileHook(logo.RollingFileHookArgs{Flag: flag})
+	var rollingFile = logo.NewRollingFileHook(
+		logo.WithFlag(flag),
+	)
 	theLogger.AddHook(rollingFile)
 
 	theLogger.Info("this is info")
@@ -39,14 +44,14 @@ func main() {
 	theLogger.Warn(name)
 
 	var err = func() error {
-		var err1 *Error
+		var err1 *MyError
 		return err1
 	}()
 
 	var b []byte = nil
 
 	// err是个空接口指针, 但必须能正确处理
-	logo.JsonI("err", err, "err2", &Error{message: "world"}, "b", b)
+	logo.JsonI("err", err, "err2", &MyError{message: "world"}, "b", b)
 
 	var signalChan = make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGTERM)

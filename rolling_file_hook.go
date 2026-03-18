@@ -2,12 +2,13 @@ package logo
 
 import (
 	"fmt"
-	"github.com/lixianmin/got/loom"
-	"github.com/lixianmin/got/osx"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
+
+	"github.com/lixianmin/got/loom"
+	"github.com/lixianmin/got/osx"
 )
 
 /********************************************************************
@@ -21,38 +22,51 @@ var levelNames = []string{"", "debug", "info", "warn", "error"}
 
 const archiveDirectory = "archive"
 
-type RollingFileHookArgs struct {
-	Flag                 int
-	FilterLevel          int
+type rollingFileHookOptions struct {
+	HookConfig
 	DirName              string
 	FileNamePrefix       string
-	MaxFileSize          int64         // 当文件达到MaxFileSize后自动分隔成小文件
-	ExpireTime           time.Duration // 文件最后修改时间超过ExpireTime后自动删除
-	CheckRollingInterval int64         // 每间隔多少行检查rolling一个文件
+	MaxFileSize          int64
+	ExpireTime           time.Duration
+	CheckRollingInterval int64
 }
+
+type RollingFileHookOption func(*rollingFileHookOptions)
 
 type RollingFileHook struct {
 	wc        loom.WaitClose
-	args      RollingFileHookArgs
+	args      rollingFileHookOptions
 	formatter *MessageFormatter
 
-	files [LevelMax] struct {
+	files [LevelMax]struct {
 		*os.File
 		checkRollingCount int64
 	}
 }
 
-func NewRollingFileHook(args RollingFileHookArgs) *RollingFileHook {
-	checkRollingFileHookArgs(&args)
-
-	var my = &RollingFileHook{
-		args:      args,
-		formatter: NewMessageFormatter(args.Flag, levelHints),
+func NewRollingFileHook(opts ...RollingFileHookOption) *RollingFileHook {
+	var options = rollingFileHookOptions{
+		HookConfig: HookConfig{
+			FilterLevel: LevelInfo,
+		},
+		DirName:              "logs",
+		MaxFileSize:          10 * 1024 * 1024,
+		ExpireTime:           7 * 24 * time.Hour,
+		CheckRollingInterval: 1024,
 	}
 
-	_ = os.MkdirAll(args.DirName, os.ModePerm)
+	for _, opt := range opts {
+		opt(&options)
+	}
 
-	for level := args.FilterLevel; level < LevelMax; level++ {
+	var my = &RollingFileHook{
+		args:      options,
+		formatter: NewMessageFormatter(options.Flag, levelHints),
+	}
+
+	_ = os.MkdirAll(options.DirName, os.ModePerm)
+
+	for level := options.FilterLevel; level < LevelMax; level++ {
 		var err = my.openLogFile(level)
 		checkPrintError(err)
 	}
@@ -239,27 +253,5 @@ func (my *RollingFileHook) SetFilterLevel(level int) {
 func checkPrintError(err error) {
 	if err != nil {
 		fmt.Println(err)
-	}
-}
-
-func checkRollingFileHookArgs(args *RollingFileHookArgs) {
-	if args.FilterLevel <= LevelNone || args.FilterLevel >= LevelMax {
-		args.FilterLevel = LevelInfo
-	}
-
-	if args.DirName == "" {
-		args.DirName = "logs"
-	}
-
-	if args.MaxFileSize <= 0 {
-		args.MaxFileSize = 10 * 1024 * 1024 // 默认大小为10M
-	}
-
-	if args.ExpireTime <= 0 {
-		args.ExpireTime = 7 * 24 * time.Hour // 默认7天后删除
-	}
-
-	if args.CheckRollingInterval <= 0 {
-		args.CheckRollingInterval = 1024
 	}
 }

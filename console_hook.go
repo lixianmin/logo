@@ -17,16 +17,29 @@ type ConsoleHookArgs struct {
 }
 
 type ConsoleHook struct {
-	args      ConsoleHookArgs
+	args      consoleHookOptions
 	formatter *MessageFormatter
 }
 
 func NewConsoleHook(args ConsoleHookArgs) *ConsoleHook {
-	checkConsoleHookArgs(&args)
+	return NewConsoleHookWithOptions(
+		WithFlag(args.Flag),
+		WithFilterLevel(args.FilterLevel),
+	)
+}
+
+func NewConsoleHookWithOptions(opts ...ConsoleHookOption) *ConsoleHook {
+	var options = consoleHookOptions{
+		FilterLevel: LevelInfo,
+	}
+
+	for _, opt := range opts {
+		opt(&options)
+	}
 
 	var my = &ConsoleHook{
-		args:      args,
-		formatter: NewMessageFormatter(args.Flag, levelHintsConsole),
+		args:      options,
+		formatter: NewMessageFormatter(options.Flag, levelHintsConsole),
 	}
 
 	return my
@@ -51,11 +64,5 @@ func (my *ConsoleHook) Write(message Message) {
 		_, _ = os.Stdout.Write(buffer)
 	case LevelWarn, LevelError:
 		_, _ = os.Stderr.Write(buffer)
-	}
-}
-
-func checkConsoleHookArgs(args *ConsoleHookArgs) {
-	if args.FilterLevel <= 0 {
-		args.FilterLevel = LevelInfo
 	}
 }

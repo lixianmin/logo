@@ -2,13 +2,14 @@ package logo
 
 import (
 	"fmt"
-	"github.com/lixianmin/got/loom"
-	"github.com/lixianmin/got/randx"
 	"math"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/lixianmin/got/loom"
+	"github.com/lixianmin/got/randx"
 )
 
 /********************************************************************
@@ -24,7 +25,7 @@ func TestConsoleHook(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag, FilterLevel: LevelDebug})
+	var console = NewConsoleHook(WithFlag(flag), WithFilterLevel(LevelDebug))
 	l.AddHook(console)
 
 	l.Debug("Debug", "Message")
@@ -41,12 +42,12 @@ func TestRollingFileHook(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var fileHook = NewRollingFileHook(RollingFileHookArgs{
-		FilterLevel:          LevelWarn,
-		Flag:                 flag,
-		MaxFileSize:          16,
-		CheckRollingInterval: 10,
-	})
+	var fileHook = NewRollingFileHook(
+		WithHookFilterLevel(LevelWarn),
+		WithHookFlag(flag),
+		WithMaxFileSize(16),
+		WithCheckRollingInterval(10),
+	)
 
 	l.AddHook(fileHook)
 
@@ -66,11 +67,11 @@ func TestFileHookFilterLevel(t *testing.T) {
 	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	l.SetFuncCallDepth(4)
 
-	var fileHook = NewRollingFileHook(RollingFileHookArgs{
-		FilterLevel: LevelWarn,
-		Flag:        flag,
-		MaxFileSize: 16,
-	})
+	var fileHook = NewRollingFileHook(
+		WithHookFilterLevel(LevelWarn),
+		WithHookFlag(flag),
+		WithMaxFileSize(16),
+	)
 
 	l.AddHook(fileHook)
 
