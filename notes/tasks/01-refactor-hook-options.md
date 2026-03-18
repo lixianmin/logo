@@ -1,6 +1,6 @@
 # Hook Options 统一重构实施计划
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 统一 Hook 的 Options 模式，创建通用的 HookConfig 结构体和 WithFlag/WithFilterLevel 函数，让所有 Hook 类型共享相同的配置方式
 
@@ -37,7 +37,7 @@
 **Files:**
 - Create: `hook_config_test.go`
 
-- [ ] **Step 1: 编写失败的测试 - 测试 HookConfig 结构体**
+- [x] **Step 1: 编写失败的测试 - 测试 HookConfig 结构体**
 
 ```go
 package logo
@@ -66,12 +66,12 @@ func TestHookConfigDefaults(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 Run: `go test -run TestHookConfigDefaults -v`
 Expected: FAIL with "undefined: HookConfig"
 
-- [ ] **Step 3: 创建 hook_config.go，定义 HookConfig 结构体**
+- [x] **Step 3: 创建 hook_config.go，定义 HookConfig 结构体**
 
 ```go
 package logo
@@ -89,12 +89,12 @@ type HookConfig struct {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 Run: `go test -run TestHookConfigDefaults -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add hook_config.go hook_config_test.go
@@ -109,7 +109,7 @@ git commit -m "feat: add HookConfig struct with default values test"
 - Modify: `hook_config.go:9-13`
 - Modify: `hook_config_test.go:21-30`
 
-- [ ] **Step 1: 编写失败的测试 - 测试 WithFlag 函数**
+- [x] **Step 1: 编写失败的测试 - 测试 WithFlag 函数**
 
 在 `hook_config_test.go` 中添加：
 
@@ -140,12 +140,12 @@ func TestWithFlag(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 Run: `go test -run TestWithFlag -v`
 Expected: FAIL with "undefined: WithFlag"
 
-- [ ] **Step 3: 实现 WithFlag 函数**
+- [x] **Step 3: 实现 WithFlag 函数**
 
 在 `hook_config.go` 中添加：
 
@@ -159,12 +159,12 @@ func WithFlag(flag int) HookOption {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 Run: `go test -run TestWithFlag -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add hook_config.go hook_config_test.go
@@ -179,7 +179,7 @@ git commit -m "feat: add WithFlag option function with table-driven tests"
 - Modify: `hook_config.go:15-18`
 - Modify: `hook_config_test.go:53-82`
 
-- [ ] **Step 1: 编写失败的测试 - 测试 WithFilterLevel 函数**
+- [x] **Step 1: 编写失败的测试 - 测试 WithFilterLevel 函数**
 
 在 `hook_config_test.go` 中添加：
 
@@ -212,12 +212,12 @@ func TestWithFilterLevel(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 Run: `go test -run TestWithFilterLevel -v`
 Expected: FAIL with "undefined: WithFilterLevel"
 
-- [ ] **Step 3: 实现 WithFilterLevel 函数**
+- [x] **Step 3: 实现 WithFilterLevel 函数**
 
 在 `hook_config.go` 中添加：
 
@@ -231,12 +231,12 @@ func WithFilterLevel(level int) HookOption {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 Run: `go test -run TestWithFilterLevel -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add hook_config.go hook_config_test.go
@@ -250,7 +250,7 @@ git commit -m "feat: add WithFilterLevel option function with table-driven tests
 **Files:**
 - Modify: `hook_config_test.go:85-120`
 
-- [ ] **Step 1: 编写测试 - 验证 HookConfig 可以被嵌入并使用通用 Option**
+- [x] **Step 1: 编写测试 - 验证 HookConfig 可以被嵌入并使用通用 Option**
 
 在 `hook_config_test.go` 中添加：
 
@@ -322,12 +322,12 @@ func TestHookConfigEmbedding(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证通过（应该立即通过，因为已有 HookConfig）**
+- [x] **Step 2: 运行测试验证通过（应该立即通过，因为已有 HookConfig）**
 
 Run: `go test -run TestHookConfigEmbedding -v`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add hook_config_test.go
@@ -344,11 +344,11 @@ git commit -m "test: add HookConfig embedding test to verify option pattern work
 - Modify: `console_hook.go:14-56`
 - Modify: `logger_test.go:28`
 
-- [ ] **Step 1: 编写测试 - 验证 ConsoleHook 可以使用通用 Option**
+- [x] **Step 1: 编写测试 - 验证 ConsoleHook 可以使用通用 Option**
 
 测试已存在于 `logger_test.go:22-37`，先验证当前状态：
 
-- [ ] **Step 2: 修改 console_hook.go，定义 consoleHookOptions 嵌入 HookConfig**
+- [x] **Step 2: 修改 console_hook.go，定义 consoleHookOptions 嵌入 HookConfig**
 
 ```go
 type consoleHookOptions struct {
@@ -358,17 +358,17 @@ type consoleHookOptions struct {
 type ConsoleHookOption = HookOption
 ```
 
-- [ ] **Step 3: 运行 ConsoleHook 测试**
+- [x] **Step 3: 运行 ConsoleHook 测试**
 
 Run: `go test -run TestConsoleHook -v`
 Expected: PASS
 
-- [ ] **Step 4: 运行所有测试验证没有破坏任何功能**
+- [x] **Step 4: 运行所有测试验证没有破坏任何功能**
 
 Run: `go test -v`
 Expected: PASS（除了可能失败的 RollingFileHook 测试）
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add console_hook.go
@@ -382,16 +382,16 @@ git commit -m "refactor: make consoleHookOptions embed HookConfig"
 **Files:**
 - `init.go:21`
 
-- [ ] **Step 1: 验证 init.go 已经使用通用 WithFlag**
+- [x] **Step 1: 验证 init.go 已经使用通用 WithFlag**
 
 检查 `init.go:21` 已经使用 `WithFlag(flag)`，无需修改
 
-- [ ] **Step 2: 运行构建验证**
+- [x] **Step 2: 运行构建验证**
 
 Run: `go build`
 Expected: 成功，无错误
 
-- [ ] **Step 3: 运行测试验证 init.go 功能正常**
+- [x] **Step 3: 运行测试验证 init.go 功能正常**
 
 Run: `go test -run TestAutoFlush -v`
 Expected: PASS
@@ -407,7 +407,7 @@ Expected: PASS
 - Modify: `rolling_file_hook.go:25-244`
 - Modify: `logger_test.go:46-50,71-74`
 
-- [ ] **Step 1: 创建 rolling_file_hook_option.go，定义特有 Option 函数**
+- [x] **Step 1: 创建 rolling_file_hook_option.go，定义特有 Option 函数**
 
 ```go
 package logo
@@ -473,7 +473,7 @@ func WithCheckRollingInterval(interval int64) RollingFileHookOption {
 }
 ```
 
-- [ ] **Step 2: 修改 rolling_file_hook.go，更新默认值和初始化逻辑**
+- [x] **Step 2: 修改 rolling_file_hook.go，更新默认值和初始化逻辑**
 
 修改 `NewRollingFileHook` 函数：
 
@@ -510,7 +510,7 @@ func NewRollingFileHook(opts ...RollingFileHookOption) *RollingFileHook {
 }
 ```
 
-- [ ] **Step 3: 更新 logger_test.go，移除对不存在函数的调用**
+- [x] **Step 3: 更新 logger_test.go，移除对不存在函数的调用**
 
 修改 `TestRollingFileHook` 和 `TestFileHookFilterLevel`：
 
@@ -575,7 +575,7 @@ func TestFileHookFilterLevel(t *testing.T) {
 }
 ```
 
-- [ ] **Step 4: 运行 RollingFileHook 测试**
+- [x] **Step 4: 运行 RollingFileHook 测试**
 
 Run: `go test -run TestRollingFileHook -v`
 Expected: PASS
@@ -583,7 +583,7 @@ Expected: PASS
 Run: `go test -run TestFileHookFilterLevel -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add rolling_file_hook.go rolling_file_hook_option.go logger_test.go
@@ -600,7 +600,7 @@ git commit -m "refactor: make rollingFileHookOptions embed HookConfig and use un
 - Modify: `ding/hook_option.go:12-24`
 - Modify: `ding/hook.go:18-88`
 
-- [ ] **Step 1: 修改 ding/hook_option.go，嵌入 HookConfig**
+- [x] **Step 1: 修改 ding/hook_option.go，嵌入 HookConfig**
 
 ```go
 package ding
@@ -627,7 +627,7 @@ func WithFilterLevel(level int) HookOption {
 }
 ```
 
-- [ ] **Step 2: 修改 ding/hook.go，使用嵌入的 FilterLevel**
+- [x] **Step 2: 修改 ding/hook.go，使用嵌入的 FilterLevel**
 
 修改 `NewHook` 函数：
 
@@ -716,12 +716,12 @@ func (my *TalkHook) Write(message logo.Message) {
 }
 ```
 
-- [ ] **Step 3: 运行 ding 测试**
+- [x] **Step 3: 运行 ding 测试**
 
 Run: `go test ./ding -v`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ding/hook_option.go ding/hook.go
@@ -737,13 +737,13 @@ git commit -m "refactor: make ding hookOptions embed HookConfig"
 **Files:**
 - Check: `lark/` 目录
 
-- [ ] **Step 1: 检查 lark 目录是否有 Hook 结构**
+- [x] **Step 1: 检查 lark 目录是否有 Hook 结构**
 
 Run: `grep -r "Hook" lark/`
 
 如果发现 lark 也有类似 ding 的 Hook 结构，则按照 ding 的方式重构。如果没有，跳过此任务。
 
-- [ ] **Step 2: 如果需要，重构 lark Hook**
+- [x] **Step 2: 如果需要，重构 lark Hook**
 
 （根据检查结果决定是否执行）
 
@@ -756,31 +756,31 @@ Run: `grep -r "Hook" lark/`
 **Files:**
 - All test files
 
-- [ ] **Step 1: 运行所有测试**
+- [x] **Step 1: 运行所有测试**
 
 Run: `go test ./... -v`
 Expected: 所有测试 PASS
 
-- [ ] **Step 2: 生成覆盖率报告**
+- [x] **Step 2: 生成覆盖率报告**
 
 Run: `go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out`
 Expected: 覆盖率 >= 80%
 
 如果覆盖率不足 80%，添加更多测试用例。
 
-- [ ] **Step 3: 运行代码格式化**
+- [x] **Step 3: 运行代码格式化**
 
 Run: `go fmt ./...`
 
-- [ ] **Step 4: 运行静态检查**
+- [x] **Step 4: 运行静态检查**
 
 Run: `go vet ./...`
 
-- [ ] **Step 5: 最终构建验证**
+- [x] **Step 5: 最终构建验证**
 
 Run: `go build ./...`
 
-- [ ] **Step 6: Commit 最终状态**
+- [x] **Step 6: Commit 最终状态**
 
 ```bash
 git add .
@@ -794,11 +794,11 @@ git commit -m "chore: final cleanup and verify all tests pass with 80%+ coverage
 **Files:**
 - Update: `AGENTS.md` (如果需要)
 
-- [ ] **Step 1: 检查 AGENTS.md 是否需要更新**
+- [x] **Step 1: 检查 AGENTS.md 是否需要更新**
 
 如果重构改变了公共 API 或使用模式，更新 AGENTS.md 中的相关示例。
 
-- [ ] **Step 2: Commit 文档更新**
+- [x] **Step 2: Commit 文档更新**
 
 ```bash
 git add AGENTS.md
