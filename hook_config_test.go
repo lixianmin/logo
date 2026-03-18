@@ -22,3 +22,28 @@ func TestHookConfigDefaults(t *testing.T) {
 		t.Errorf("expected default FilterLevel=0, got %d", config.FilterLevel)
 	}
 }
+
+func TestWithFlag(t *testing.T) {
+	var tests = []struct {
+		name     string
+		flag     int
+		wantFlag int
+	}{
+		{"zero flag", 0, 0},
+		{"single flag", FlagDate, FlagDate},
+		{"combined flags", FlagDate | FlagTime | FlagShortFile, FlagDate | FlagTime | FlagShortFile},
+		{"all flags", FlagDate | FlagTime | FlagLongFile | FlagShortFile | FlagLevel, FlagDate | FlagTime | FlagLongFile | FlagShortFile | FlagLevel},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var config HookConfig
+			var opt = WithFlag(tt.flag)
+			opt(&config)
+
+			if config.Flag != tt.wantFlag {
+				t.Errorf("WithFlag(%d): got Flag=%d, want %d", tt.flag, config.Flag, tt.wantFlag)
+			}
+		})
+	}
+}
