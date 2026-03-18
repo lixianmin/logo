@@ -11,30 +11,26 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
-type ConsoleHookArgs struct {
-	Flag        int
-	FilterLevel int
+type consoleHookOptions struct {
+	HookConfig
 }
+
+type ConsoleHookOption = HookOption
 
 type ConsoleHook struct {
 	args      consoleHookOptions
 	formatter *MessageFormatter
 }
 
-func NewConsoleHook(args ConsoleHookArgs) *ConsoleHook {
-	return NewConsoleHookWithOptions(
-		WithFlag(args.Flag),
-		WithFilterLevel(args.FilterLevel),
-	)
-}
-
-func NewConsoleHookWithOptions(opts ...ConsoleHookOption) *ConsoleHook {
+func NewConsoleHook(opts ...ConsoleHookOption) *ConsoleHook {
 	var options = consoleHookOptions{
-		FilterLevel: LevelInfo,
+		HookConfig: HookConfig{
+			FilterLevel: LevelInfo,
+		},
 	}
 
 	for _, opt := range opts {
-		opt(&options)
+		opt(&options.HookConfig)
 	}
 
 	var my = &ConsoleHook{

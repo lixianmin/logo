@@ -11,6 +11,18 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
+func WithHookFlag(flag int) RollingFileHookOption {
+	return func(options *rollingFileHookOptions) {
+		WithFlag(flag)(&options.HookConfig)
+	}
+}
+
+func WithHookFilterLevel(level int) RollingFileHookOption {
+	return func(options *rollingFileHookOptions) {
+		WithFilterLevel(level)(&options.HookConfig)
+	}
+}
+
 func WithDirName(dirName string) RollingFileHookOption {
 	return func(options *rollingFileHookOptions) {
 		if dirName != "" {

@@ -43,15 +43,14 @@ func TestRollingFileHook(t *testing.T) {
 	l.SetFuncCallDepth(4)
 
 	var fileHook = NewRollingFileHook(
-		WithHookFilterLevel(LevelWarn),
 		WithHookFlag(flag),
+		WithHookFilterLevel(LevelWarn),
 		WithMaxFileSize(16),
 		WithCheckRollingInterval(10),
 	)
 
 	l.AddHook(fileHook)
 
-	// 测试archive中生成的文件名
 	for i := 0; i < 200; i++ {
 		l.Info("This is info")
 		l.Warn("I am a warning")
@@ -94,11 +93,6 @@ func TestFileHookFilterLevel(t *testing.T) {
 
 	_ = l.Close()
 }
-
-//func TestLogAnyObject(t *testing.T) {
-//	Info(123.45678)
-//	Info(t)
-//}
 
 func TestAutoFlush(t *testing.T) {
 	var logger = GetLogger().(*Logger)

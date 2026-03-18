@@ -14,11 +14,11 @@ Copyright (C) - All Rights Reserved
 var theLogger ILogger
 
 func init() {
-	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
 	var log = NewLogger()
 	log.SetFuncCallDepth(5)
 
-	var console = NewConsoleHook(ConsoleHookArgs{Flag: flag})
+	const flag = FlagDate | FlagTime | FlagShortFile | FlagLevel
+	var console = NewConsoleHook(WithFlag(flag))
 	log.AddHook(console)
 
 	theLogger = log

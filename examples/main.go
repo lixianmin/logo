@@ -34,7 +34,7 @@ func main() {
 
 	// 文件日志
 	var rollingFile = logo.NewRollingFileHook(
-		logo.WithFlag(flag),
+		logo.WithHookFlag(flag),
 	)
 	theLogger.AddHook(rollingFile)
 
