@@ -18,6 +18,63 @@
 
 **logo** 是一个轻量级 Go 日志框架（log + go），提供基础日志功能，除 `github.com/lixianmin/got` 外无其他外部依赖。框架通过钩子系统实现扩展性。
 
+## 使用指南
+
+### 快速使用（推荐模式）
+
+```go
+// 1. 程序入口初始化
+func main() {
+    var logger = logo.GetLogger().(*logo.Logger)
+    defer logger.Close()
+
+    const flag = logo.FlagDate | logo.FlagTime | logo.FlagShortFile | logo.FlagLevel
+    var fileHook = logo.NewRollingFileHook(
+        logo.WithHookFlag(flag),
+        logo.WithDirName("logs"),
+    )
+    logger.AddHook(fileHook)
+
+    logo.Info("服务启动")
+}
+```
+
+### 关键规则
+
+1. **优先使用全局便捷函数**：`logo.Info()` / `logo.Warn()` / `logo.Error()` / `logo.JsonI()` 等，无需持有 Logger 实例
+2. **Format 支持两种风格**：
+   - Printf 风格：`logo.Info("连接 %s:%d", host, port)`
+   - 空格拼接：`logo.Info("插件启动:", name, "路径:", path)`
+3. **JSON 日志用 key-value 交替传入**：`logo.JsonI("sessionId", id, "elapsed", duration)`
+4. **日志标签用方括号**：`logo.Info("[GatewayClient] 连接建立")`，方便按模块过滤
+5. **异步写入必须 Close**：开启 `LogAsyncWrite` 后，退出前必须调用 `logger.Close()`
+6. **所有 Hook 默认 FilterLevel 为 LevelInfo**：ConsoleHook 和 RollingFileHook 均如此。Logger.SetFilterLevel 会同步更新所有已注册 Hook 的 FilterLevel
+7. **`GetLogger()` 返回 ILogger 接口**：需类型断言 `GetLogger().(*Logger)` 才能调用 AddHook/SetFilterLevel/Close 等
+
+### 全局 Logger 获取方式
+
+```go
+// 获取 ILogger 接口（只能调用 Debug/Info/Warn/Error）
+var logger = logo.GetLogger()
+
+// 获取 *Logger 实例（可调用 AddHook/SetFilterLevel/Close 等）
+var logger = logo.GetLogger().(*logo.Logger)
+```
+
+### 消息平台 Hook
+
+```go
+// 钉钉
+var talk = ding.NewTalk("标题前缀", "token")
+var hook = ding.NewHook(talk, ding.WithFilterLevel(logo.LevelError))
+
+// 飞书（lark.Lark 实现了 ding.Talker 接口）
+var lk = lark.NewLark("标题前缀", "token")
+var hook = ding.NewHook(lk, ding.WithFilterLevel(logo.LevelError))
+```
+
+---
+
 ## 架构设计
 
 ### 核心组件
